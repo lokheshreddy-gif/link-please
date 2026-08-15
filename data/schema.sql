@@ -65,7 +65,7 @@ CREATE TABLE IF NOT EXISTS dm_jobs (
     UNIQUE(rule_id, recipient_user_id)
 );
 
--- send_log tracks outbound calls for the rolling 60-second rate limiter (max 9 requests per 60s)
+-- send_log tracks outbound calls for the rolling 61-second rate limiter (max 10 requests per 61s)
 CREATE TABLE IF NOT EXISTS send_log (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     sent_at REAL NOT NULL
@@ -79,3 +79,11 @@ CREATE TABLE IF NOT EXISTS counters (
 
 -- Pre-seed duplicates_blocked counter row if it doesn't exist
 INSERT OR IGNORE INTO counters (name, value) VALUES ('duplicates_blocked', 0);
+
+-- Performance indexes for worker scan queries during 500-event bursts
+CREATE INDEX IF NOT EXISTS idx_events_unprocessed ON events(processed_at) WHERE processed_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_dupevents_unprocessed ON duplicate_events(processed_at) WHERE processed_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_jobs_pending ON dm_jobs(status, next_attempt_at);
+CREATE INDEX IF NOT EXISTS idx_jobs_accepted ON dm_jobs(status, updated_at);
+CREATE INDEX IF NOT EXISTS idx_sendlog_time ON send_log(sent_at);
+
