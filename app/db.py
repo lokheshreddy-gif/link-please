@@ -22,9 +22,9 @@ async def get_db():
         db.row_factory = aiosqlite.Row
         await db.execute("PRAGMA journal_mode=WAL;")
         await db.execute("PRAGMA synchronous=NORMAL;")
-        # Wait up to 4s for the SQLite write lock instead of erroring instantly.
-        # 4s keeps us inside the 5s webhook budget while surviving burst contention.
-        await db.execute("PRAGMA busy_timeout=4000;")
+        # Wait up to 3s for the SQLite write lock instead of erroring instantly.
+        # 3s keeps us inside the 5s webhook budget with headroom for cold-instance overhead.
+        await db.execute("PRAGMA busy_timeout=3000;")
         yield db
 
 

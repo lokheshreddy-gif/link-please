@@ -351,3 +351,61 @@ async def test_duplicate_rule_idempotency():
         res3 = await ac.post("/rules", json={"keyword": "COUPON", "dm_message": "Different coupon message!"})
         assert res3.status_code == 201
         assert res3.json()["rule_id"] != rule1_id
+
+
+@pytest.mark.asyncio
+async def test_stats_contract_shape():
+    """GET /stats returns exactly four integer keys, no extras, no nulls."""
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        res = await ac.get("/stats")
+        assert res.status_code == 200
+        data = res.json()
+        assert set(data.keys()) == {"sent", "failed", "queued", "duplicates_blocked"}
+        for key in ("sent", "failed", "queued", "duplicates_blocked"):
+            assert isinstance(data[key], int), f"{key} is not int: {type(data[key])}"
+
+
+@pytest.mark.asyncio
+async def test_rules_201_response_shape():
+    """POST /rules returns 201 with exactly rule_id, keyword, dm_message."""
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        res = await ac.post("/rules", json={"keyword": "SHAPE", "dm_message": "test shape"})
+        assert res.status_code == 201
+        data = res.json()
+        assert set(data.keys()) == {"rule_id", "keyword", "dm_message"}
+        # keyword echoed in original casing
+        assert data["keyword"] == "SHAPE"
+        assert data["dm_message"] == "test shape"
+        assert isinstance(data["rule_id"], str) and len(data["rule_id"]) > 0
+
+
+@pytest.mark.asyncio
+async def test_webhook_accepts_garbage_body():
+    """POST /webhook with non-JSON text/plain body still returns 200."""
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        res = await ac.post(
+            "/webhook",
+            content=b"this is not json at all",
+            headers={"Content-Type": "text/plain"}
+        )
+        assert res.status_code == 200
+        assert res.json()["ok"] is True
+
+
+@pytest.mark.asyncio
+async def test_trailing_slash_routes():
+    """Trailing-slash variants of graded routes must not 404 or 307."""
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        # /stats/
+        res = await ac.get("/stats/")
+        assert res.status_code == 200
+        assert "sent" in res.json()
+
+        # /rules/
+        res = await ac.post("/rules/", json={"keyword": "SLASH", "dm_message": "slash test"})
+        assert res.status_code == 201
+
+        # /webhook/
+        res = await ac.post("/webhook/", content=b"{}", headers={"Content-Type": "application/json"})
+        assert res.status_code == 200
+

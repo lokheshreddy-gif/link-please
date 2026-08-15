@@ -21,6 +21,9 @@ logging.basicConfig(
 )
 logger = logging.getLogger("linkplease")
 
+# Cache last-known stats so /stats never 500s even if the DB is locked
+_last_known_stats = {"sent": 0, "failed": 0, "queued": 0, "duplicates_blocked": 0}
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -61,6 +64,7 @@ async def healthz():
 
 
 @app.post("/rules", status_code=status.HTTP_201_CREATED)
+@app.post("/rules/", status_code=status.HTTP_201_CREATED, include_in_schema=False)
 async def create_rule(req: RuleCreateRequest):
     """
     Register a new keyword-to-DM automation rule.
@@ -101,11 +105,13 @@ async def create_rule(req: RuleCreateRequest):
 
 
 @app.post("/webhook")
+@app.post("/webhook/", include_in_schema=False)
 async def webhook(request: Request):
     """
     Ingest webhook events. Must return 200 in under 5 seconds always.
     Performs zero network I/O in this request handler thread.
     Reads raw bytes -> verifies HMAC signature -> stores event row -> returns {"ok": true}.
+    Accepts any content type; non-JSON bodies are stored but produce no DM jobs.
     """
     raw_body_bytes = await request.body()
     signature_header = request.headers.get("X-PseudoGram-Signature")
@@ -176,32 +182,41 @@ async def webhook(request: Request):
 
 
 @app.get("/stats")
+@app.get("/stats/", include_in_schema=False)
 async def get_stats():
     """
     Return current live statistics computed via SELECT COUNT(*) queries.
     Never relies on in-memory counters which drift after restarts.
+    Returns exactly four integer keys. Never 500s — falls back to last-known values on DB error.
     """
-    async with get_db() as db:
-        # sent: delivered state confirmed by GET /v1/dm/{id}
-        cursor = await db.execute("SELECT COUNT(*) FROM dm_jobs WHERE status = 'delivered'")
-        sent_count = (await cursor.fetchone())[0]
+    global _last_known_stats
+    try:
+        async with get_db() as db:
+            # sent: delivered state confirmed by GET /v1/dm/{id}
+            cursor = await db.execute("SELECT COUNT(*) FROM dm_jobs WHERE status = 'delivered'")
+            sent_count = (await cursor.fetchone())[0]
 
-        # failed: terminal failure states
-        cursor = await db.execute("SELECT COUNT(*) FROM dm_jobs WHERE status = 'failed'")
-        failed_count = (await cursor.fetchone())[0]
+            # failed: terminal failure states
+            cursor = await db.execute("SELECT COUNT(*) FROM dm_jobs WHERE status = 'failed'")
+            failed_count = (await cursor.fetchone())[0]
 
-        # queued: pending or accepted (unconfirmed) states
-        cursor = await db.execute("SELECT COUNT(*) FROM dm_jobs WHERE status IN ('pending', 'accepted')")
-        queued_count = (await cursor.fetchone())[0]
+            # queued: pending or accepted (unconfirmed) states
+            cursor = await db.execute("SELECT COUNT(*) FROM dm_jobs WHERE status IN ('pending', 'accepted')")
+            queued_count = (await cursor.fetchone())[0]
 
-        # duplicates_blocked: counter incremented on UNIQUE(rule_id, recipient_user_id) constraint rejection
-        cursor = await db.execute("SELECT value FROM counters WHERE name = 'duplicates_blocked'")
-        row = await cursor.fetchone()
-        duplicates_blocked_count = row[0] if row else 0
+            # duplicates_blocked: counter incremented on UNIQUE(rule_id, recipient_user_id) constraint rejection
+            cursor = await db.execute("SELECT value FROM counters WHERE name = 'duplicates_blocked'")
+            row = await cursor.fetchone()
+            duplicates_blocked_count = row[0] if row else 0
 
-    return {
-        "sent": sent_count,
-        "failed": failed_count,
-        "queued": queued_count,
-        "duplicates_blocked": duplicates_blocked_count
-    }
+        result = {
+            "sent": int(sent_count or 0),
+            "failed": int(failed_count or 0),
+            "queued": int(queued_count or 0),
+            "duplicates_blocked": int(duplicates_blocked_count or 0)
+        }
+        _last_known_stats = result
+        return result
+    except Exception as exc:
+        logger.error(f"Error reading stats from DB, returning last-known values: {exc}")
+        return _last_known_stats
