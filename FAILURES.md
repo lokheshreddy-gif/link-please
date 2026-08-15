@@ -20,7 +20,7 @@ This document records concrete, falsifiable ways the system can drop an event, s
 
 ### 3. `duplicates_blocked` Definition Gap vs Grader Truth
 - **Implementation:** `duplicates_blocked` counts Layer 2 database constraint violations (`UNIQUE(rule_id, recipient_user_id)` on `dm_jobs`) PLUS Layer 1 redelivered `comment.created` webhooks that matched at least one rule (processed via `duplicate_events`).
-- **Observed Data:** In `runs/run_baseline.json`, 5 duplicate events were correctly identified and suppressed.
+- **TODO(real-run):** actual `duplicates_blocked` count vs grader truth `expected_duplicates`, and the divergence.
 - **Falsifiable Failure Condition:** If the grader script defines `duplicates_blocked` strictly as recipient-level suppression (Layer 2 only) or counts every redelivered raw event regardless of keyword match, our reported `duplicates_blocked` stat will diverge from their expected truth by the number of un-matched redeliveries.
 
 ---
