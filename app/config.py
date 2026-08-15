@@ -10,7 +10,6 @@ class Settings(BaseSettings):
     pseudogram_api_key: str = ""
     pseudogram_base_url: str = "https://pseudogram-api.onrender.com"
     db_path: str = "data/app.db"
-    database_url: str = ""
     enable_signature_verification: bool = False
 
     model_config = SettingsConfigDict(
