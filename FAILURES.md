@@ -1,51 +1,50 @@
-# FAILURES.md — Known Failure Modes & Limitations Audit
+# FAILURES.md — Technical Failure Modes & Audit Findings
 
-This document details concrete, falsifiable failure conditions, edge cases, and architectural trade-offs observed during implementation and load testing.
-
----
-
-### 1. SQLite on Render's Ephemeral Disk (Process Restart Data Loss)
-- **Condition:** Render free-tier web services run on ephemeral container filesystems. On process restart or redeployment, `data/app.db` is destroyed and re-initialized.
-- **Consequence:** All rule configurations, event logs, DM job records, `send_log` history, and `duplicates_blocked` counters are erased.
-- **Impact on Stats & Deduplication:** After a restart, `duplicates_blocked` drops to 0. A user who was previously DMed for a rule can receive another DM if the rule is re-created, because the stored `(rule_id, recipient_user_id)` constraint history was lost with the file.
-- **Fix:** Mount a persistent disk volume (e.g., Render Disk) or migrate `app.db` to a managed external PostgreSQL instance.
+This document records concrete, falsifiable ways the system can drop an event, send a duplicate DM, or produce an inaccurate stat under stress, based on empirical testing and codebase review.
 
 ---
 
-### 2. Process Death While Job is in `accepted` State
-- **Condition:** The process crashes after receiving a `202 Accepted` from `POST /v1/dm/send` (storing `dm_id` in `dm_jobs`), but before the Reconciler worker polls `GET /v1/dm/{dm_id}`.
-- **Behavior on Restart:** On restart, the Reconciler worker reads `dm_jobs WHERE status = 'accepted'` from the database and resumes polling `GET /v1/dm/{dm_id}` using the persisted `dm_id`.
-- **Safety Guarantee:** The stored `dm_id` and original `Idempotency-Key` prevent double-sending. The system does not issue a duplicate `POST /v1/dm/send`.
+### 1. `database is locked` Burst Contention & Event Loss
+- **Symptom & Cause:** Under high concurrent webhook delivery while three background workers execute write transactions, SQLite raises `sqlite3.OperationalError: database is locked`. Surfaced by `tests/test_simulation.py::test_500_events_local_simulation`.
+- **Mitigation & Limitation:** `PRAGMA busy_timeout=4000;` was added to `app/db.py` to make connection attempts wait up to 4000ms for write locks. In `app/main.py`, post-signature exceptions are caught to return HTTP 200 `{"ok": true}` and prevent cascade retry storms.
+- **Falsifiable Failure Condition:** If incoming webhooks burst beyond 500 events / 10s or SQLite lock contention exceeds 4000ms, the webhook handler logs the exception and drops the event without inserting it into `events`. The event is lost, causing `sent` and `queued` stats to undercount expected delivery.
 
 ---
 
-### 3. Rate Limiter Slot Reservation Window (Crash Between `send_log` Insert and HTTP Request)
-- **Condition:** To guarantee strict crash-resilient rate limiting, a timestamp is inserted into `send_log` *before* making the outbound `POST /v1/dm/send` request. If the process crashes or network times out before the HTTP call completes, that rate limiter slot remains occupied in `send_log`.
-- **Consequence:** One rate-limiter slot out of the 9 available rolling slots is consumed without a DM actually being dispatched.
-- **Trade-off Justification:** Conserving rate-limit headroom on a crash is strictly safer than inserting into `send_log` *after* the call (which could cause rolling rate limit breaches across process restarts).
+### 2. Reconcile Retry Cap Dead Code Bug (Discovered in Code Review)
+- **Original Bug:** `app/workers/reconciler.py` checked `if ":retry" in old_idem_key:`. Because `old_idem_key` was a 64-character SHA256 hex digest (`hashlib.sha256(...).hexdigest()`), `:retry` never matched. `reconcile_retry_count` reset to `1` on every cycle, the cap `> 3` was unreachable, and failing DMs (~15% mock API case) looped `accepted -> pending -> accepted` indefinitely while consuming rate limit slots.
+- **Fix Applied:** Added `reconcile_attempts` column to `dm_jobs` in `data/schema.sql` and `app/db.py` migration.
+- **Residual Failure Mode:** When `reconcile_attempts > 3`, the job is marked `failed`. If the remote API actually delivered attempt #2 but erroneously reported `failed` on `GET /v1/dm/{dm_id}`, our system marks it terminally `failed`. In this scenario, `sent` undercounts by 1 and `failed` overcounts by 1 per occurrence.
 
 ---
 
-### 4. `comment.deleted` Arriving After DM Accepted / Delivered
-- **Condition:** A `comment.created` event triggers a DM send. The DM reaches `accepted` or `delivered` status on the external API. Hours later, a `comment.deleted` event for that comment arrives.
-- **Consequence:** The external Instagram API does not support un-sending or revoking delivered Direct Messages.
-- **Handling:** `UPDATE dm_jobs SET status='cancelled' WHERE comment_id=? AND status='pending'` only affects pending jobs. Jobs already in `accepted` or `delivered` remain unchanged, and an informational log is written.
+### 3. `duplicates_blocked` Definition Gap vs Grader Truth
+- **Implementation:** `duplicates_blocked` counts Layer 2 database constraint violations (`UNIQUE(rule_id, recipient_user_id)` on `dm_jobs`) PLUS Layer 1 redelivered `comment.created` webhooks that matched at least one rule (processed via `duplicate_events`).
+- **Observed Data:** In `runs/run_baseline.json`, 5 duplicate events were correctly identified and suppressed.
+- **Falsifiable Failure Condition:** If the grader script defines `duplicates_blocked` strictly as recipient-level suppression (Layer 2 only) or counts every redelivered raw event regardless of keyword match, our reported `duplicates_blocked` stat will diverge from their expected truth by the number of un-matched redeliveries.
 
 ---
 
-### 5. Reconciler Retry Cap & False Negative `failed` Status
-- **Condition:** The external API has a known ~15% silent failure rate where a `202 Accepted` later flips to `failed` on `GET /v1/dm/{dm_id}`. When this occurs, the Reconciler resets the job to `pending` with a **fresh** idempotency key (`...:retry{n}`). If a job fails delivery 3 times, it is marked terminally `failed`.
-- **Failure Mode:** If attempt #2 was actually delivered by the remote server but reported as `failed` due to a remote API bug, our system will retry up to attempt #3 or mark it `failed`. If marked `failed`, the `sent` count understates true delivery.
+### 4. Ephemeral Disk Wipe on Process Restart (Render Free Tier)
+- **Symptom:** Render free web services restart on deploy or idle timeout, destroying the container filesystem where `data/app.db` resides.
+- **Stat Impact:** All database rows in `rules`, `events`, `comments`, `dm_jobs`, `send_log`, and `counters` are wiped.
+- **Deduplication Failure:** `sent`, `failed`, `queued`, and `duplicates_blocked` reset to 0. If a rule is re-created after restart, a user who previously received a DM will receive a second DM because the stored `UNIQUE(rule_id, recipient_user_id)` constraint history was lost.
 
 ---
 
-### 6. Concurrent Workers & Race Conditions on Deduplication
-- **Condition:** Two concurrent worker tasks attempt to process two separate webhook requests for the same recipient (`user_id`) matching the same `rule_id` at the exact same millisecond.
-- **Prevention:** Application-level `if` checks are insufficient under concurrency. Duplicate prevention is enforced at the database layer via SQLite's `UNIQUE(rule_id, recipient_user_id)` constraint on `dm_jobs`.
-- **Behavior:** SQLite acquires a write lock during transaction commit. The first transaction succeeds. The second transaction raises `sqlite3.IntegrityError`, which is caught by the worker to execute `UPDATE counters SET value = value + 1 WHERE name = 'duplicates_blocked'`. Zero duplicate DMs are created.
+### 5. Wasted Rate-Limit Headroom on Mid-Flight Process Crash
+- **Mechanism:** To guarantee rate limits (max 10 sends / rolling 61s) are never breached across process crashes, `app/workers/sender.py` inserts a timestamp into `send_log` *before* issuing `POST /v1/dm/send`.
+- **Falsifiable Failure Condition:** If the process crashes or network connection drops *after* the `send_log` insert but *before* receiving the HTTP response, 1 slot out of 10 remains reserved in `send_log` for 61 seconds without any DM being dispatched. System throughput drops by 10% for that 61-second window per crash.
 
 ---
 
-### 7. Disagreement on `queued` Definition
-- **Condition:** In our system, `queued` is defined strictly as `status IN ('pending', 'accepted')` (all DMs not yet in a terminal `delivered` or `failed` state).
-- **Difference:** If the external grader scripts count `202 Accepted` responses immediately as `sent` (rather than waiting for `GET /v1/dm/{dm_id}` delivery confirmation), our `sent` stat will be lower and `queued` stat higher during active processing until reconciliation completes.
+### 6. `comment.deleted` Arriving After DM Acceptance (Unrecoverable Send)
+- **Symptom:** A `comment.created` event triggers a DM job that reaches `accepted` or `delivered` state. A `comment.deleted` event for that comment arrives subsequently.
+- **Failure Mode:** Instagram and the Pseudogram API provide no API to recall or delete an accepted/delivered Direct Message.
+- **Result:** `UPDATE dm_jobs SET status='cancelled' WHERE comment_id=? AND status='pending'` only cancels jobs still in `pending` status. Delivered DMs cannot be undone.
+
+---
+
+### 7. Reconciler Retry Cap False Negative (`sent` Deflation)
+- **Symptom:** Remote API returns `status: "failed"` on `GET /v1/dm/{dm_id}` even though the DM reached the recipient's inbox.
+- **Result:** The Reconciler resets the job to `pending` with a fresh idempotency key (`...:retry{n}`). After 3 failed reconcile attempts, the job is marked `status='failed'`. The DM was delivered to the user, but our system reports it as `failed`, causing `sent` to under-report true delivery.

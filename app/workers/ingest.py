@@ -128,6 +128,51 @@ async def process_single_event(db, event):
     await db.execute("UPDATE events SET processed_at=? WHERE event_id=?", (now, event_id))
 
 
+async def process_duplicate_events(db):
+    """
+    Process unprocessed duplicate_events rows.
+    If event_type == 'comment.created' and text matches any rule, increment duplicates_blocked counter.
+    Does NOT create dm_jobs.
+    """
+    cursor = await db.execute(
+        "SELECT id, raw_body FROM duplicate_events WHERE processed_at IS NULL ORDER BY received_at ASC LIMIT 50"
+    )
+    unprocessed_dups = await cursor.fetchall()
+    now = time.time()
+
+    if not unprocessed_dups:
+        return
+
+    cursor = await db.execute("SELECT keyword_lower FROM rules")
+    rules = await cursor.fetchall()
+
+    for dup in unprocessed_dups:
+        dup_id = dup["id"]
+        raw_body = dup["raw_body"]
+        try:
+            payload = json.loads(raw_body)
+            if isinstance(payload, dict) and payload.get("event_type") == "comment.created":
+                data = payload.get("data", {})
+                if isinstance(data, dict):
+                    text = data.get("text", "")
+                    text_lower = text.lower()
+
+                    matching_rules_count = 0
+                    for r in rules:
+                        if r["keyword_lower"] in text_lower:
+                            matching_rules_count += 1
+
+                    if matching_rules_count > 0:
+                        await db.execute(
+                            "UPDATE counters SET value = value + ? WHERE name = 'duplicates_blocked'",
+                            (matching_rules_count,)
+                        )
+        except Exception as exc:
+            logger.error(f"Error processing duplicate event id {dup_id}: {exc}")
+
+        await db.execute("UPDATE duplicate_events SET processed_at=? WHERE id=?", (now, dup_id))
+
+
 async def run_ingest_worker_once():
     """
     Execute one batch of unprocessed events ingestion.
@@ -141,8 +186,9 @@ async def run_ingest_worker_once():
         for event in unprocessed:
             await process_single_event(db, event)
 
-        if unprocessed:
-            await db.commit()
+        await process_duplicate_events(db)
+
+        await db.commit()
 
 
 async def ingest_worker_loop():

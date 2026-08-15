@@ -11,10 +11,11 @@ logger = logging.getLogger("linkplease.sender")
 
 async def get_active_send_count_in_window(db, now: float) -> tuple[int, float | None]:
     """
-    Check rolling 60-second window in send_log table.
+    Check rolling 61-second window in send_log table.
+    Widen window to 61.0s to compensate for potential clock skew while using full 10 requests/60s budget.
     Returns (count_in_window, oldest_timestamp_in_window).
     """
-    window_start = now - 60.0
+    window_start = now - 61.0
     cursor = await db.execute("SELECT COUNT(*) FROM send_log WHERE sent_at > ?", (window_start,))
     count = (await cursor.fetchone())[0]
 
@@ -61,16 +62,19 @@ async def execute_send_job(client: httpx.AsyncClient, db, job):
     idempotency_key = job["idempotency_key"]
     attempts = job["attempts"]
 
-    # Rate limiting check: max 9 sends per 60s (1 slot headroom)
+    # Prune send_log rows older than 300s to prevent unbounded DB growth across long runs
+    await db.execute("DELETE FROM send_log WHERE sent_at < ?", (now - 300.0,))
+
+    # Rate limiting check: max 10 sends per rolling 61s window
     send_count, oldest_sent_at = await get_active_send_count_in_window(db, now)
 
-    if send_count >= 9:
+    if send_count >= 10:
         if oldest_sent_at:
-            wait_time = (oldest_sent_at + 60.0) - now + 0.1
+            wait_time = (oldest_sent_at + 61.0) - now + 0.1
         else:
             wait_time = 1.0
         wait_time = max(0.1, wait_time)
-        logger.info(f"Rate limiter threshold reached ({send_count}/9). Sleeping {wait_time:.2f}s")
+        logger.info(f"Rate limiter threshold reached ({send_count}/10). Sleeping {wait_time:.2f}s")
         await asyncio.sleep(wait_time)
         return
 

@@ -65,12 +65,25 @@ async def create_rule(req: RuleCreateRequest):
     """
     Register a new keyword-to-DM automation rule.
     Keyword is stored in lowercase for case-insensitive substring matching.
+    If an existing rule has identical keyword_lower AND dm_message, return 201 with existing rule_id.
     """
-    rule_id = f"rule_{uuid.uuid4().hex[:8]}"
     now = time.time()
     keyword_lower = req.keyword.lower()
 
     async with get_db() as db:
+        cursor = await db.execute(
+            "SELECT rule_id FROM rules WHERE keyword_lower = ? AND dm_message = ?",
+            (keyword_lower, req.dm_message)
+        )
+        existing = await cursor.fetchone()
+        if existing:
+            return {
+                "rule_id": existing["rule_id"],
+                "keyword": req.keyword,
+                "dm_message": req.dm_message
+            }
+
+        rule_id = f"rule_{uuid.uuid4().hex[:8]}"
         await db.execute(
             """
             INSERT INTO rules (rule_id, keyword_lower, dm_message, created_at)
@@ -101,10 +114,10 @@ async def webhook(request: Request):
     now = time.time()
     raw_body_str = raw_body_bytes.decode("utf-8", errors="replace")
 
-    # If signature is invalid, record event with signature_valid=0 and return 401
+    # If signature is invalid, record event in rejected_events table and return 401
     if not sig_valid:
         logger.warning("Rejected webhook due to invalid signature")
-        event_id = f"evt_unverified_{uuid.uuid4().hex[:8]}"
+        event_id = None
         try:
             parsed = json.loads(raw_body_str)
             if isinstance(parsed, dict) and "event_id" in parsed:
@@ -115,38 +128,49 @@ async def webhook(request: Request):
         async with get_db() as db:
             await db.execute(
                 """
-                INSERT OR IGNORE INTO events (event_id, event_type, raw_body, signature_valid, received_at)
-                VALUES (?, ?, ?, 0, ?)
+                INSERT INTO rejected_events (event_id, raw_body, received_at)
+                VALUES (?, ?, ?)
                 """,
-                (event_id, "unknown", raw_body_str, now)
+                (event_id, raw_body_str, now)
             )
             await db.commit()
         return JSONResponse(status_code=401, content={"error": "invalid_signature"})
 
-    # Parse payload structure safely; never crash or fail on malformed JSON
-    event_id = None
-    event_type = "unknown"
     try:
-        payload = json.loads(raw_body_str)
-        if isinstance(payload, dict):
-            event_id = payload.get("event_id")
-            event_type = payload.get("event_type", "unknown")
+        # Parse payload structure safely; never crash or fail on malformed JSON
+        event_id = None
+        event_type = "unknown"
+        try:
+            payload = json.loads(raw_body_str)
+            if isinstance(payload, dict):
+                event_id = payload.get("event_id")
+                event_type = payload.get("event_type", "unknown")
+        except Exception as exc:
+            logger.error(f"Failed to parse webhook JSON body: {exc}")
+
+        if not event_id:
+            event_id = f"evt_fallback_{uuid.uuid4().hex[:8]}"
+
+        # Event ID PK acts as Layer 1 deduplication guard (INSERT OR IGNORE)
+        async with get_db() as db:
+            cursor = await db.execute(
+                """
+                INSERT OR IGNORE INTO events (event_id, event_type, raw_body, signature_valid, received_at)
+                VALUES (?, ?, ?, 1, ?)
+                """,
+                (event_id, event_type, raw_body_str, now)
+            )
+            if cursor.rowcount == 0:
+                await db.execute(
+                    """
+                    INSERT INTO duplicate_events (event_id, raw_body, received_at)
+                    VALUES (?, ?, ?)
+                    """,
+                    (event_id, raw_body_str, now)
+                )
+            await db.commit()
     except Exception as exc:
-        logger.error(f"Failed to parse webhook JSON body: {exc}")
-
-    if not event_id:
-        event_id = f"evt_fallback_{uuid.uuid4().hex[:8]}"
-
-    # Event ID PK acts as Layer 1 deduplication guard (INSERT OR IGNORE)
-    async with get_db() as db:
-        await db.execute(
-            """
-            INSERT OR IGNORE INTO events (event_id, event_type, raw_body, signature_valid, received_at)
-            VALUES (?, ?, ?, 1, ?)
-            """,
-            (event_id, event_type, raw_body_str, now)
-        )
-        await db.commit()
+        logger.error(f"Unexpected error in webhook processing: {exc}")
 
     return {"ok": True}
 

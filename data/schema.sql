@@ -18,6 +18,23 @@ CREATE TABLE IF NOT EXISTS events (
     processed_at REAL
 );
 
+-- Duplicate raw webhook events received (rowcount == 0 on events insert)
+CREATE TABLE IF NOT EXISTS duplicate_events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    event_id TEXT NOT NULL,
+    raw_body TEXT NOT NULL,
+    received_at REAL NOT NULL,
+    processed_at REAL
+);
+
+-- Rejected webhook events failing signature verification
+CREATE TABLE IF NOT EXISTS rejected_events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    event_id TEXT,
+    raw_body TEXT NOT NULL,
+    received_at REAL NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS comments (
     comment_id TEXT PRIMARY KEY,
     post_id TEXT,
@@ -40,6 +57,7 @@ CREATE TABLE IF NOT EXISTS dm_jobs (
     status TEXT NOT NULL,
     dm_id TEXT,
     attempts INTEGER DEFAULT 0,
+    reconcile_attempts INTEGER NOT NULL DEFAULT 0,
     next_attempt_at REAL NOT NULL,
     last_error TEXT,
     created_at REAL NOT NULL,

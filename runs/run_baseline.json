@@ -1,0 +1,29 @@
+{
+  "timestamp": 1771180500,
+  "target_url": "http://localhost:8000",
+  "run_id": "sim_run_local_audit",
+  "stats": {
+    "sent": 38,
+    "failed": 0,
+    "queued": 0,
+    "duplicates_blocked": 5
+  },
+  "truth": {
+    "expected_sent": 38,
+    "expected_duplicates": 5
+  },
+  "diff_report": {
+    "expected_unique_jobs": 38,
+    "actual_total_jobs": 38,
+    "jobs_diff": 0,
+    "expected_duplicates_redelivered": 5,
+    "actual_duplicates_blocked": 5,
+    "duplicates_diff": 0,
+    "missing_users": []
+  },
+  "rate_limiter_audit": {
+    "status": "PASSED",
+    "max_sends_60s": 9,
+    "max_allowed": 10
+  }
+}

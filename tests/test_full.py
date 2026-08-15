@@ -245,4 +245,109 @@ async def test_reconciler_delivered_and_failed_retry_with_fresh_key(monkeypatch)
         row = await cursor.fetchone()
         assert row["status"] == "pending"
         # Idempotency key regenerated with fresh retry suffix
-        assert ":retry1" in row["idempotency_key"] or len(row["idempotency_key"]) == 64
+        assert len(row["idempotency_key"]) == 64
+
+
+@pytest.mark.asyncio
+async def test_reconcile_retry_cap_exhaustion(monkeypatch):
+    now = time.time()
+    async with get_db() as db:
+        await db.execute(
+            """
+            INSERT INTO dm_jobs (
+                job_id, rule_id, recipient_user_id, comment_id, message,
+                idempotency_key, status, dm_id, reconcile_attempts, next_attempt_at, created_at, updated_at
+            ) VALUES ('j_cap', 'r1', 'u_cap', 'c_cap', 'msg', 'idem_cap_base', 'accepted', 'dm_cap_fail', 0, ?, ?, ?)
+            """,
+            (now, now, now - 5.0)
+        )
+        await db.commit()
+
+    async def mock_get_failed(self, url, headers=None, timeout=None):
+        return httpx.Response(200, json={"dm_id": "dm_cap_fail", "status": "failed"})
+
+    monkeypatch.setattr(httpx.AsyncClient, "get", mock_get_failed)
+
+    async with httpx.AsyncClient() as client:
+        # Loop reconciler 4 times (1 -> pending, 2 -> pending, 3 -> pending, 4 -> failed)
+        for _ in range(4):
+            async with get_db() as db:
+                await db.execute("UPDATE dm_jobs SET status='accepted', dm_id='dm_cap_fail', updated_at=? WHERE job_id='j_cap'", (now - 5.0,))
+                await db.commit()
+            await reconcile_accepted_jobs_once(client)
+
+    async with get_db() as db:
+        cursor = await db.execute("SELECT status, reconcile_attempts, last_error FROM dm_jobs WHERE job_id='j_cap'")
+        row = await cursor.fetchone()
+        assert row["status"] == "failed"
+        assert row["reconcile_attempts"] == 4
+        assert "exhausted" in row["last_error"].lower()
+
+
+@pytest.mark.asyncio
+async def test_layer1_duplicate_event_counting():
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        await ac.post("/rules", json={"keyword": "DISCOUNT", "dm_message": "Use code DISCOUNT10"})
+
+    matching_payload = {
+        "event_id": "evt_match_dup",
+        "event_type": "comment.created",
+        "data": {
+            "comment_id": "cmt_m1",
+            "text": "Give me a DISCOUNT",
+            "from": {"user_id": "usr_m1", "username": "user_m1"}
+        }
+    }
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        # First send -> creates event
+        await ac.post("/webhook", json=matching_payload)
+        # Redelivery -> triggers duplicate_events insertion
+        await ac.post("/webhook", json=matching_payload)
+
+    await run_ingest_worker_once()
+
+    async with get_db() as db:
+        cursor = await db.execute("SELECT COUNT(*) FROM dm_jobs")
+        assert (await cursor.fetchone())[0] == 1
+        cursor = await db.execute("SELECT value FROM counters WHERE name = 'duplicates_blocked'")
+        assert (await cursor.fetchone())[0] == 1
+
+    # Now test non-matching redelivered comment
+    non_matching_payload = {
+        "event_id": "evt_nomatch_dup",
+        "event_type": "comment.created",
+        "data": {
+            "comment_id": "cmt_nm1",
+            "text": "Hello world no keyword",
+            "from": {"user_id": "usr_nm1", "username": "user_nm1"}
+        }
+    }
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        await ac.post("/webhook", json=non_matching_payload)
+        await ac.post("/webhook", json=non_matching_payload)
+
+    await run_ingest_worker_once()
+
+    async with get_db() as db:
+        cursor = await db.execute("SELECT value FROM counters WHERE name = 'duplicates_blocked'")
+        assert (await cursor.fetchone())[0] == 1  # Counter did not increase
+
+
+@pytest.mark.asyncio
+async def test_duplicate_rule_idempotency():
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        res1 = await ac.post("/rules", json={"keyword": "COUPON", "dm_message": "Use code SAVE50"})
+        assert res1.status_code == 201
+        rule1_id = res1.json()["rule_id"]
+
+        # Duplicate keyword + identical message returns 201 with same rule_id
+        res2 = await ac.post("/rules", json={"keyword": "coupon", "dm_message": "Use code SAVE50"})
+        assert res2.status_code == 201
+        assert res2.json()["rule_id"] == rule1_id
+
+        # Same keyword + different message creates new rule
+        res3 = await ac.post("/rules", json={"keyword": "COUPON", "dm_message": "Different coupon message!"})
+        assert res3.status_code == 201
+        assert res3.json()["rule_id"] != rule1_id

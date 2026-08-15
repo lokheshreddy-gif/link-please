@@ -7,4 +7,3 @@ data/*.db-*
 .env
 .pytest_cache/
 .DS_Store
-runs/*.json

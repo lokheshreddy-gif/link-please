@@ -19,7 +19,7 @@ async def reconcile_accepted_jobs_once(client: httpx.AsyncClient):
     async with get_db() as db:
         cursor = await db.execute(
             """
-            SELECT job_id, rule_id, recipient_user_id, dm_id, idempotency_key, attempts
+            SELECT job_id, rule_id, recipient_user_id, dm_id, idempotency_key, attempts, reconcile_attempts
             FROM dm_jobs
             WHERE status = 'accepted' AND updated_at <= ?
             LIMIT 10
@@ -33,8 +33,7 @@ async def reconcile_accepted_jobs_once(client: httpx.AsyncClient):
             rule_id = job["rule_id"]
             user_id = job["recipient_user_id"]
             dm_id = job["dm_id"]
-            old_idem_key = job["idempotency_key"]
-            attempts = job["attempts"]
+            reconcile_attempts = job["reconcile_attempts"]
 
             if not dm_id:
                 # If dm_id is missing for some reason, mark failed
@@ -64,35 +63,31 @@ async def reconcile_accepted_jobs_once(client: httpx.AsyncClient):
 
                     elif status_val == "failed":
                         # ~15% flip case: API accepted DM but later failed to deliver.
-                        # We must retry with a FRESH idempotency key so POST /v1/dm/send doesn't return old dead dm_id.
-                        reconcile_retry_count = 1
-                        if ":retry" in old_idem_key:
-                            try:
-                                reconcile_retry_count = int(old_idem_key.split(":retry")[-1]) + 1
-                            except ValueError:
-                                reconcile_retry_count = 1
+                        # Track reconcile attempts via database column.
+                        n = reconcile_attempts + 1
 
-                        if reconcile_retry_count > 3:
+                        if n > 3:
                             await db.execute(
                                 """
                                 UPDATE dm_jobs
-                                SET status='failed', updated_at=?, last_error='Reconcile retries limit reached (3)'
+                                SET status='failed', reconcile_attempts=?, updated_at=?, last_error='Reconcile retries exhausted (3)'
                                 WHERE job_id=?
                                 """,
-                                (now, job_id)
+                                (n, now, job_id)
                             )
-                            logger.error(f"Job {job_id} failed after reaching max reconcile retries")
+                            logger.error(f"Job {job_id} failed after reaching max reconcile retries (3)")
                         else:
-                            fresh_idem_key = hashlib.sha256(f"{rule_id}:{user_id}:retry{reconcile_retry_count}".encode()).hexdigest()
+                            # The fresh idempotency key is essential — reusing the original key would make POST /v1/dm/send return the same dead dm_id.
+                            fresh_idem_key = hashlib.sha256(f"{rule_id}:{user_id}:retry{n}".encode()).hexdigest()
                             await db.execute(
                                 """
                                 UPDATE dm_jobs
-                                SET status='pending', dm_id=NULL, idempotency_key=?, next_attempt_at=?, updated_at=?, last_error='Reconciler reset after API failed delivery'
+                                SET status='pending', dm_id=NULL, reconcile_attempts=?, attempts=0, idempotency_key=?, next_attempt_at=?, updated_at=?, last_error='Reconciler reset after API failed delivery'
                                 WHERE job_id=?
                                 """,
-                                (fresh_idem_key, now, now, job_id)
+                                (n, fresh_idem_key, now, now, job_id)
                             )
-                            logger.warning(f"Job {job_id} failed on delivery; reset to pending with fresh idempotency key {fresh_idem_key[:8]}")
+                            logger.warning(f"Job {job_id} failed on delivery; reset to pending with fresh idempotency key {fresh_idem_key[:8]} (reconcile attempt #{n})")
 
                     elif status_val == "queued":
                         # Still queued on external server, touch updated_at to retry next cycle
