@@ -250,7 +250,7 @@ async def debug_events():
             jobs_count = (await c5.fetchone())[0]
 
             # Last 5 dm_jobs
-            c6 = await db.execute("SELECT job_id, status, attempts, reconcile_attempts, next_attempt_at, last_error, dm_id FROM dm_jobs ORDER BY created_at DESC LIMIT 5")
+            c6 = await db.execute("SELECT job_id, status, attempts, reconcile_attempts, next_attempt_at, updated_at, last_error, dm_id FROM dm_jobs ORDER BY created_at DESC LIMIT 5")
             last_jobs = [dict(row) for row in await c6.fetchall()]
 
             # Count of send_log
