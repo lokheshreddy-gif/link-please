@@ -208,7 +208,6 @@ async def get_stats():
             cursor = await db.execute("SELECT value FROM counters WHERE name = 'duplicates_blocked'")
             row = await cursor.fetchone()
             duplicates_blocked_count = row[0] if row else 0
-
         result = {
             "sent": int(sent_count or 0),
             "failed": int(failed_count or 0),
@@ -220,3 +219,39 @@ async def get_stats():
     except Exception as exc:
         logger.error(f"Error reading stats from DB, returning last-known values: {exc}")
         return _last_known_stats
+
+
+@app.get("/debug-events")
+async def debug_events():
+    """Temporary endpoint to check DB state and signature verification details."""
+    try:
+        async with get_db() as db:
+            c1 = await db.execute("SELECT COUNT(*) FROM events")
+            events_count = (await c1.fetchone())[0]
+
+            c2 = await db.execute("SELECT COUNT(*) FROM duplicate_events")
+            dupes_count = (await c2.fetchone())[0]
+
+            c3 = await db.execute("SELECT COUNT(*) FROM rejected_events")
+            rejected_count = (await c3.fetchone())[0]
+
+            # Get the last 5 rejected events to inspect their signatures and bodies
+            c4 = await db.execute("SELECT * FROM rejected_events ORDER BY id DESC LIMIT 5")
+            last_rejected = [dict(row) for row in await c4.fetchall()]
+
+            # Also check settings
+            from app.config import settings
+            return {
+                "events_count": events_count,
+                "duplicate_events_count": dupes_count,
+                "rejected_events_count": rejected_count,
+                "last_rejected": last_rejected,
+                "settings": {
+                    "enable_signature_verification": settings.enable_signature_verification,
+                    "pseudogram_api_key_len": len(settings.pseudogram_api_key) if settings.pseudogram_api_key else 0,
+                    "pseudogram_api_key_prefix": settings.pseudogram_api_key[:8] if settings.pseudogram_api_key else ""
+                }
+            }
+    except Exception as exc:
+        return {"error": str(exc)}
+
