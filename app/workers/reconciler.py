@@ -47,7 +47,10 @@ async def reconcile_accepted_jobs_once(client: httpx.AsyncClient):
             headers = {"X-API-Key": settings.pseudogram_api_key}
 
             try:
+                last_run["last_url"] = url
                 response = await client.get(url, headers=headers, timeout=5.0)
+                last_run["last_http_code"] = response.status_code
+                last_run["last_http_body"] = response.text
 
                 if response.status_code == 200:
                     data = response.json()
@@ -107,7 +110,7 @@ async def reconcile_accepted_jobs_once(client: httpx.AsyncClient):
             await db.commit()
 
 
-last_run = {"time": 0.0, "count": 0, "error": None}
+last_run = {"time": 0.0, "count": 0, "error": None, "last_http_code": None, "last_http_body": None, "last_url": None}
 
 
 async def reconciler_worker_loop():
