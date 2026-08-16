@@ -57,6 +57,21 @@ class RuleCreateRequest(BaseModel):
     dm_message: str
 
 
+@app.get("/")
+async def root():
+    """Welcome page for the root URL."""
+    return {
+        "service": "link-please",
+        "status": "running",
+        "endpoints": {
+            "GET /healthz": "Health check",
+            "POST /rules": "Create a keyword-to-DM rule",
+            "GET /stats": "View sent/failed/queued/duplicates_blocked counters",
+            "POST /webhook": "Receive Pseudogram webhook events"
+        }
+    }
+
+
 @app.get("/healthz")
 async def healthz():
     """Liveness probe returning 200 OK."""
