@@ -248,6 +248,7 @@ async def debug_events():
                 "last_rejected": last_rejected,
                 "settings": {
                     "enable_signature_verification": settings.enable_signature_verification,
+                    "db_path": settings.db_path,
                     "pseudogram_api_key_len": len(settings.pseudogram_api_key) if settings.pseudogram_api_key else 0,
                     "pseudogram_api_key_prefix": settings.pseudogram_api_key[:8] if settings.pseudogram_api_key else ""
                 }
