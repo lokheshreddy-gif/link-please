@@ -115,9 +115,9 @@ def main():
             identical_count = 0
             last_stats = current_stats
 
-        if identical_count >= 3:
+        if identical_count >= 3 and (current_stats.get("queued", 0) == 0 or elapsed > 600):
             converged = True
-            print("    CONVERGED (3 consecutive identical readings)")
+            print(f"    CONVERGED (identical readings and queue drained, or timeout reached)")
             break
 
         time.sleep(10)
@@ -139,11 +139,17 @@ def main():
 
     # ── Step 6: Diff ──────────────────────────────────────────────────────
     diff_report = {}
+    diff_report = {}
     if truth_data:
-        # Parse defensively: record null if field missing
-        expected_sent = truth_data.get("expected_sent")
-        expected_duplicates = truth_data.get("expected_duplicates")
-        expected_unique_jobs = truth_data.get("expected_unique_jobs", expected_sent)
+        # Parse based on actual schema: expected_unique_recipient_count, and duplicates from attempt diff
+        expected_unique_jobs = truth_data.get("expected_unique_recipient_count")
+        
+        total_attempts = truth_data.get("total_deliveries_attempted")
+        total_events = truth_data.get("total_events_generated")
+        if total_attempts is not None and total_events is not None:
+            expected_duplicates = total_attempts - total_events
+        else:
+            expected_duplicates = None
 
         total_my_jobs = final_stats.get("sent", 0) + final_stats.get("failed", 0) + final_stats.get("queued", 0)
 
@@ -156,10 +162,10 @@ def main():
             "duplicates_diff": (final_stats.get("duplicates_blocked", 0) - expected_duplicates) if expected_duplicates is not None else None,
             "notes": [],
         }
-        if expected_sent is None:
-            diff_report["notes"].append("truth payload missing 'expected_sent'")
+        if expected_unique_jobs is None:
+            diff_report["notes"].append("truth payload missing 'expected_unique_recipient_count'")
         if expected_duplicates is None:
-            diff_report["notes"].append("truth payload missing 'expected_duplicates'")
+            diff_report["notes"].append("truth payload missing 'total_deliveries_attempted' or 'total_events_generated'")
 
     # ── Step 7: Rate audit (local DB only) ────────────────────────────────
     rate_audit = {"status": "SKIPPED", "reason": "no local DB available"}
