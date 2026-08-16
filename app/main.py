@@ -245,13 +245,29 @@ async def debug_events():
             c4 = await db.execute("SELECT * FROM rejected_events ORDER BY id DESC LIMIT 5")
             last_rejected = [dict(row) for row in await c4.fetchall()]
 
+            # Count of dm_jobs
+            c5 = await db.execute("SELECT COUNT(*) FROM dm_jobs")
+            jobs_count = (await c5.fetchone())[0]
+
+            # Last 5 dm_jobs
+            c6 = await db.execute("SELECT job_id, status, attempts, reconcile_attempts, next_attempt_at, last_error, dm_id FROM dm_jobs ORDER BY created_at DESC LIMIT 5")
+            last_jobs = [dict(row) for row in await c6.fetchall()]
+
+            # Count of send_log
+            c7 = await db.execute("SELECT COUNT(*) FROM send_log")
+            send_log_count = (await c7.fetchone())[0]
+
             # Also check settings
             from app.config import settings
             return {
+                "now": time.time(),
                 "events_count": events_count,
                 "duplicate_events_count": dupes_count,
                 "rejected_events_count": rejected_count,
                 "last_rejected": last_rejected,
+                "jobs_count": jobs_count,
+                "last_jobs": last_jobs,
+                "send_log_count": send_log_count,
                 "settings": {
                     "enable_signature_verification": settings.enable_signature_verification,
                     "db_path": settings.db_path,
