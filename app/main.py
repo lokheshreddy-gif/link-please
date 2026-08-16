@@ -259,6 +259,7 @@ async def debug_events():
 
             # Also check settings
             from app.config import settings
+            from app.workers.reconciler import last_run as rec_run
             return {
                 "now": time.time(),
                 "events_count": events_count,
@@ -268,6 +269,7 @@ async def debug_events():
                 "jobs_count": jobs_count,
                 "last_jobs": last_jobs,
                 "send_log_count": send_log_count,
+                "reconciler_last_run": rec_run,
                 "settings": {
                     "enable_signature_verification": settings.enable_signature_verification,
                     "db_path": settings.db_path,

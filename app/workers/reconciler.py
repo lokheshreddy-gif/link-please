@@ -107,19 +107,29 @@ async def reconcile_accepted_jobs_once(client: httpx.AsyncClient):
             await db.commit()
 
 
+last_run = {"time": 0.0, "count": 0, "error": None}
+
+
 async def reconciler_worker_loop():
     """
     Continuous background loop for delivery status reconciliation.
     Runs every 3 seconds.
     """
     logger.info("Reconciler worker loop started")
+    global last_run
     async with httpx.AsyncClient() as client:
         while True:
             try:
+                last_run["time"] = time.time()
+                last_run["error"] = None
+                # We can compute count by counting jobs in accepted state processed
+                # but let's just mark that the loop completed successfully
                 await reconcile_accepted_jobs_once(client)
+                last_run["count"] += 1
             except asyncio.CancelledError:
                 logger.info("Reconciler worker loop cancelled")
                 break
             except Exception as exc:
                 logger.error(f"Error in reconciler worker loop: {exc}", exc_info=True)
+                last_run["error"] = str(exc)
             await asyncio.sleep(3.0)
