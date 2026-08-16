@@ -140,8 +140,10 @@ def main():
     check("POST /webhook/ (trailing slash, signed) → 200", res.status_code == 200, f"got {res.status_code}")
 
     # ── 9. POST /webhook garbage text/plain → 200 ────────────────────────
-    res = client.post(f"{base}/webhook", content=b"not json at all",
-                      headers={"Content-Type": "text/plain"})
+    garbage_bytes = b"not json at all"
+    garbage_sig = sign(garbage_bytes, api_key)
+    res = client.post(f"{base}/webhook", content=garbage_bytes,
+                      headers={"X-PseudoGram-Signature": garbage_sig, "Content-Type": "text/plain"})
     check("POST /webhook (text/plain garbage) → 200", res.status_code == 200, f"got {res.status_code}")
 
     # ── 10. Duplicate event → duplicates_blocked increases ────────────────
