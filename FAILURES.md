@@ -40,9 +40,11 @@ If the grader counts every redelivered event regardless of keyword match, or cou
 
 ---
 
-### 5. Restart during drain loses in-flight state
+### 5. Restart during drain
 
-On the Render mounted disk, all SQLite rows survive restart: `rules`, `events`, `dm_jobs` (including pending/accepted jobs and their retry state), `send_log`, and `counters`. The workers resume from where they left off.
+All SQLite rows — `rules`, `events`, `dm_jobs` (including `status`, `attempts`, `reconcile_attempts`, `next_attempt_at`, `dm_id`), `send_log`, and `counters` — persist across a process restart against the same DB file. Verified by `tests/test_restart.py`, which populates every table, closes all connections, re-runs `init_db()`, and asserts every row and field is intact, including that the ingest worker picks up still-unprocessed events. This does **not** prove the Render disk mount preserves the file across redeploys — that requires restarting the live service and re-reading `/stats`.
+
+`TODO(real-run): whether /stats values survived a Render service restart during or after the 500-event run.`
 
 What does not survive: any `asyncio` task mid-execution. If a sender worker crashes between the `send_log` reservation and the HTTP response, the rate slot is burned (see §6) and the job stays `pending` with `attempts` unchanged — it will be retried on the next poll. No DM is lost, but one rate slot is wasted for 61 seconds.
 
