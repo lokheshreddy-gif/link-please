@@ -99,8 +99,8 @@ async def execute_send_job(client: httpx.AsyncClient, db, job):
         response = await client.post(url, json=payload, headers=headers, timeout=10.0)
         status_code = response.status_code
 
-        if status_code == 202:
-            # 202 Accepted: Store dm_id and move to 'accepted' state (unconfirmed)
+        if status_code in (200, 202):
+            # 200/202 Accepted: Store dm_id and move to 'accepted' state (unconfirmed)
             resp_data = response.json()
             dm_id = resp_data.get("dm_id")
             await db.execute(
