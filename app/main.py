@@ -122,7 +122,13 @@ async def webhook(request: Request):
 
     # If signature is invalid, record event in rejected_events table and return 401
     if not sig_valid:
-        logger.warning("Rejected webhook due to invalid signature")
+        import hmac, hashlib
+        from app.config import settings
+        secret_bytes = settings.pseudogram_api_key.encode("utf-8")
+        computed = "sha256=" + hmac.new(secret_bytes, msg=raw_body_bytes, digestmod=hashlib.sha256).hexdigest()
+        debug_info = f"EXPECTED: {computed} | RECEIVED: {signature_header} | BODY: {raw_body_str}"
+        logger.warning(f"Rejected webhook due to invalid signature. Expected: {computed}, Got: {signature_header}")
+        
         event_id = None
         try:
             parsed = json.loads(raw_body_str)
@@ -137,7 +143,7 @@ async def webhook(request: Request):
                 INSERT INTO rejected_events (event_id, raw_body, received_at)
                 VALUES (?, ?, ?)
                 """,
-                (event_id, raw_body_str, now)
+                (event_id, debug_info, now)
             )
             await db.commit()
         return JSONResponse(status_code=401, content={"error": "invalid_signature"})
