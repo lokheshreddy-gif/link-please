@@ -1,0 +1,285 @@
+{
+  "run_id": "run_a1099b598ac1",
+  "target_url": "https://link-please.onrender.com",
+  "count": 500,
+  "duration_seconds": 10,
+  "converged": false,
+  "stats_readings": [
+    {
+      "timestamp": 1786864341.4494479,
+      "stats": {
+        "sent": 0,
+        "failed": 0,
+        "queued": 1,
+        "duplicates_blocked": 0
+      }
+    },
+    {
+      "timestamp": 1786864352.818379,
+      "stats": {
+        "sent": 0,
+        "failed": 0,
+        "queued": 11,
+        "duplicates_blocked": 1
+      }
+    },
+    {
+      "timestamp": 1786864363.094722,
+      "stats": {
+        "sent": 0,
+        "failed": 0,
+        "queued": 11,
+        "duplicates_blocked": 1
+      }
+    },
+    {
+      "timestamp": 1786864373.3653278,
+      "stats": {
+        "sent": 0,
+        "failed": 0,
+        "queued": 11,
+        "duplicates_blocked": 1
+      }
+    },
+    {
+      "timestamp": 1786864383.65828,
+      "stats": {
+        "sent": 0,
+        "failed": 0,
+        "queued": 11,
+        "duplicates_blocked": 1
+      }
+    },
+    {
+      "timestamp": 1786864393.9725802,
+      "stats": {
+        "sent": 0,
+        "failed": 0,
+        "queued": 11,
+        "duplicates_blocked": 1
+      }
+    },
+    {
+      "timestamp": 1786864404.277384,
+      "stats": {
+        "sent": 6,
+        "failed": 0,
+        "queued": 6,
+        "duplicates_blocked": 1
+      }
+    },
+    {
+      "timestamp": 1786864414.809791,
+      "stats": {
+        "sent": 6,
+        "failed": 0,
+        "queued": 11,
+        "duplicates_blocked": 3
+      }
+    },
+    {
+      "timestamp": 1786864425.323483,
+      "stats": {
+        "sent": 6,
+        "failed": 0,
+        "queued": 11,
+        "duplicates_blocked": 3
+      }
+    },
+    {
+      "timestamp": 1786864435.6663182,
+      "stats": {
+        "sent": 6,
+        "failed": 0,
+        "queued": 11,
+        "duplicates_blocked": 3
+      }
+    },
+    {
+      "timestamp": 1786864446.0084531,
+      "stats": {
+        "sent": 6,
+        "failed": 0,
+        "queued": 11,
+        "duplicates_blocked": 3
+      }
+    },
+    {
+      "timestamp": 1786864456.353687,
+      "stats": {
+        "sent": 6,
+        "failed": 0,
+        "queued": 11,
+        "duplicates_blocked": 3
+      }
+    },
+    {
+      "timestamp": 1786864467.104882,
+      "stats": {
+        "sent": 7,
+        "failed": 0,
+        "queued": 16,
+        "duplicates_blocked": 3
+      }
+    },
+    {
+      "timestamp": 1786864478.364685,
+      "stats": {
+        "sent": 13,
+        "failed": 0,
+        "queued": 11,
+        "duplicates_blocked": 3
+      }
+    },
+    {
+      "timestamp": 1786864488.656694,
+      "stats": {
+        "sent": 13,
+        "failed": 0,
+        "queued": 11,
+        "duplicates_blocked": 3
+      }
+    },
+    {
+      "timestamp": 1786864499.348762,
+      "stats": {
+        "sent": 13,
+        "failed": 0,
+        "queued": 11,
+        "duplicates_blocked": 3
+      }
+    },
+    {
+      "timestamp": 1786864510.1214662,
+      "stats": {
+        "sent": 13,
+        "failed": 0,
+        "queued": 11,
+        "duplicates_blocked": 3
+      }
+    },
+    {
+      "timestamp": 1786865578.344306,
+      "stats": {
+        "sent": 66,
+        "failed": 1,
+        "queued": 0,
+        "duplicates_blocked": 28
+      }
+    }
+  ],
+  "final_stats": {
+    "sent": 66,
+    "failed": 1,
+    "queued": 0,
+    "duplicates_blocked": 28
+  },
+  "truth": {
+    "run_id": "run_a1099b598ac1",
+    "status": "complete",
+    "total_events_generated": 500,
+    "total_deliveries_attempted": 537,
+    "webhook_200_count": 537,
+    "expected_unique_recipients": [
+      "usr_056aeccbd5",
+      "usr_08f7636910",
+      "usr_122b3f559b",
+      "usr_152adf5f1d",
+      "usr_170926c2cc",
+      "usr_18c766cd2c",
+      "usr_1a61a4e9bc",
+      "usr_1ce2fa8a0a",
+      "usr_1d835cafd8",
+      "usr_23cd8b4756",
+      "usr_252c86554f",
+      "usr_263d3ca9d1",
+      "usr_2838e02b75",
+      "usr_2ada7d5f05",
+      "usr_2ce062006f",
+      "usr_304f09d3be",
+      "usr_308c1f78dc",
+      "usr_345b564734",
+      "usr_3612d62f72",
+      "usr_38f1bddb44",
+      "usr_3b8444f717",
+      "usr_46b59d396c",
+      "usr_4a3f8511d1",
+      "usr_4c4cfa0b50",
+      "usr_4d7b503d1f",
+      "usr_4e3cddbdad",
+      "usr_5009e2e929",
+      "usr_527b4fdeac",
+      "usr_56bb995537",
+      "usr_57af757551",
+      "usr_596c563a3e",
+      "usr_7100698e12",
+      "usr_7263a4aed9",
+      "usr_752f3ed738",
+      "usr_77b9e3557c",
+      "usr_7bd012aa64",
+      "usr_823c3a60ae",
+      "usr_8247b3c349",
+      "usr_877c3b415a",
+      "usr_89b6a3e658",
+      "usr_8a4872c9be",
+      "usr_8b93455b93",
+      "usr_8f913e8d1e",
+      "usr_8fecabf406",
+      "usr_90e909bede",
+      "usr_917193e63b",
+      "usr_925e24fe93",
+      "usr_96838501ed",
+      "usr_97b5a8b3ec",
+      "usr_9c3ca4a5bd",
+      "usr_9c508bc237",
+      "usr_9e8b6882b6",
+      "usr_a329000579",
+      "usr_a3a2c0f32a",
+      "usr_a45ca57f00",
+      "usr_ad1c1491f8",
+      "usr_adc1ccce04",
+      "usr_b08df97f3e",
+      "usr_b453bbaa90",
+      "usr_b7677e4b6c",
+      "usr_bb63443ccc",
+      "usr_bc4e70f4fd",
+      "usr_c8d38cb70c",
+      "usr_c919291eee",
+      "usr_c965de44bb",
+      "usr_cfe09b7f18",
+      "usr_d2ac32fdaf",
+      "usr_d45bcbb05f",
+      "usr_d81b64297f",
+      "usr_da147f3e2e",
+      "usr_dc6118d3ef",
+      "usr_dd3321a4a0",
+      "usr_dfd41e9299",
+      "usr_e04a9e0e19",
+      "usr_e48546261e",
+      "usr_e55559f9ef",
+      "usr_e5912210a1",
+      "usr_e615b6889b",
+      "usr_e679bea796",
+      "usr_f1c8ec0f45",
+      "usr_f1f5288e72",
+      "usr_f89c5cbe1f",
+      "usr_fcc640df7b",
+      "usr_fd696f9270",
+      "usr_fdacbe442f"
+    ],
+    "expected_unique_recipient_count": 85
+  },
+  "diff_report": {
+    "expected_unique_jobs": 85,
+    "actual_total_jobs": 67,
+    "jobs_diff": -18,
+    "expected_duplicates": 37,
+    "actual_duplicates_blocked": 28,
+    "duplicates_diff": -9,
+    "notes": []
+  },
+  "rate_audit": {
+    "status": "SKIPPED",
+    "reason": "no local DB available"
+  }
+}

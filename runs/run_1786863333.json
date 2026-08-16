@@ -1,0 +1,80 @@
+{
+  "run_id": "run_0e178d14cd34",
+  "target_url": "https://link-please.onrender.com",
+  "count": 500,
+  "duration_seconds": 10,
+  "converged": true,
+  "stats_readings": [
+    {
+      "timestamp": 1786863290.4607549,
+      "stats": {
+        "sent": 0,
+        "failed": 0,
+        "queued": 0,
+        "duplicates_blocked": 0
+      }
+    },
+    {
+      "timestamp": 1786863301.409535,
+      "stats": {
+        "sent": 0,
+        "failed": 0,
+        "queued": 11,
+        "duplicates_blocked": 0
+      }
+    },
+    {
+      "timestamp": 1786863311.723468,
+      "stats": {
+        "sent": 0,
+        "failed": 0,
+        "queued": 11,
+        "duplicates_blocked": 0
+      }
+    },
+    {
+      "timestamp": 1786863322.4556549,
+      "stats": {
+        "sent": 0,
+        "failed": 0,
+        "queued": 11,
+        "duplicates_blocked": 0
+      }
+    },
+    {
+      "timestamp": 1786863332.7937,
+      "stats": {
+        "sent": 0,
+        "failed": 0,
+        "queued": 11,
+        "duplicates_blocked": 0
+      }
+    }
+  ],
+  "final_stats": {
+    "sent": 0,
+    "failed": 0,
+    "queued": 11,
+    "duplicates_blocked": 0
+  },
+  "truth": {
+    "run_id": "run_0e178d14cd34",
+    "status": "running"
+  },
+  "diff_report": {
+    "expected_unique_jobs": null,
+    "actual_total_jobs": 11,
+    "jobs_diff": null,
+    "expected_duplicates": null,
+    "actual_duplicates_blocked": 0,
+    "duplicates_diff": null,
+    "notes": [
+      "truth payload missing 'expected_unique_recipient_count'",
+      "truth payload missing 'total_deliveries_attempted' or 'total_events_generated'"
+    ]
+  },
+  "rate_audit": {
+    "status": "SKIPPED",
+    "reason": "no local DB available"
+  }
+}

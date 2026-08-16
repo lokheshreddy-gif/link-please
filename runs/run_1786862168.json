@@ -1,0 +1,180 @@
+{
+  "run_id": "run_45f39ee89258",
+  "target_url": "https://link-please.onrender.com",
+  "count": 500,
+  "duration_seconds": 10,
+  "converged": true,
+  "stats_readings": [
+    {
+      "timestamp": 1786862114.163998,
+      "stats": {
+        "sent": 0,
+        "failed": 2,
+        "queued": 1,
+        "duplicates_blocked": 3
+      }
+    },
+    {
+      "timestamp": 1786862124.4794261,
+      "stats": {
+        "sent": 0,
+        "failed": 2,
+        "queued": 1,
+        "duplicates_blocked": 3
+      }
+    },
+    {
+      "timestamp": 1786862134.769172,
+      "stats": {
+        "sent": 0,
+        "failed": 3,
+        "queued": 0,
+        "duplicates_blocked": 3
+      }
+    },
+    {
+      "timestamp": 1786862145.25315,
+      "stats": {
+        "sent": 0,
+        "failed": 3,
+        "queued": 0,
+        "duplicates_blocked": 3
+      }
+    },
+    {
+      "timestamp": 1786862155.644279,
+      "stats": {
+        "sent": 0,
+        "failed": 3,
+        "queued": 0,
+        "duplicates_blocked": 3
+      }
+    },
+    {
+      "timestamp": 1786862166.380963,
+      "stats": {
+        "sent": 0,
+        "failed": 3,
+        "queued": 0,
+        "duplicates_blocked": 3
+      }
+    }
+  ],
+  "final_stats": {
+    "sent": 0,
+    "failed": 3,
+    "queued": 0,
+    "duplicates_blocked": 3
+  },
+  "truth": {
+    "run_id": "run_45f39ee89258",
+    "status": "complete",
+    "total_events_generated": 500,
+    "total_deliveries_attempted": 548,
+    "webhook_200_count": 0,
+    "expected_unique_recipients": [
+      "usr_05c44ed288",
+      "usr_078ca75d57",
+      "usr_07a8b76260",
+      "usr_09f125d705",
+      "usr_0b4d2cf1b1",
+      "usr_0da400b5bc",
+      "usr_1416d2a0b9",
+      "usr_20d4c3f6a9",
+      "usr_24a774c4a5",
+      "usr_2e518ce046",
+      "usr_2ee4da9acc",
+      "usr_2f1ced2e45",
+      "usr_314d09b4d0",
+      "usr_349f7fc65d",
+      "usr_37cad6dd1d",
+      "usr_3b67ccc7cc",
+      "usr_3db8839d5b",
+      "usr_47d07d5334",
+      "usr_4d2c1ea97a",
+      "usr_5076e51994",
+      "usr_50da732060",
+      "usr_543b907145",
+      "usr_56282951fb",
+      "usr_5b47b9dcd7",
+      "usr_5bdc085e1d",
+      "usr_5d87910cb8",
+      "usr_5e5ed2ca54",
+      "usr_620f6aaf74",
+      "usr_62da532ea9",
+      "usr_665a21d980",
+      "usr_6aa03b952c",
+      "usr_6b185c39ee",
+      "usr_6b9bee8382",
+      "usr_6bbb569cb3",
+      "usr_6effbd3fa3",
+      "usr_705d6e3e58",
+      "usr_71fac9f54c",
+      "usr_738d48e29e",
+      "usr_74a08495e8",
+      "usr_74b98bd07b",
+      "usr_75660615ce",
+      "usr_76560c1b25",
+      "usr_789e7de150",
+      "usr_7b143931c9",
+      "usr_7bca220b68",
+      "usr_7c3f775b82",
+      "usr_7dd76e09a0",
+      "usr_7eff37c827",
+      "usr_7f9b53f49b",
+      "usr_7fa291fb33",
+      "usr_8220cd1772",
+      "usr_872c408042",
+      "usr_883c556a66",
+      "usr_8c2d1debc0",
+      "usr_8cc8b23bdd",
+      "usr_919d56fd3e",
+      "usr_97b1095ee5",
+      "usr_9a45e98dfc",
+      "usr_9b91dc713f",
+      "usr_a14b37c7de",
+      "usr_a9b7cf9a09",
+      "usr_a9dc147bd5",
+      "usr_ad4ed7feec",
+      "usr_adf300b7ba",
+      "usr_b00c07f00f",
+      "usr_b764a4c591",
+      "usr_b8a3f0c0f2",
+      "usr_b99a8bcea3",
+      "usr_ba81d1c392",
+      "usr_be7049bfb2",
+      "usr_c8a33b3ce1",
+      "usr_c9cf867788",
+      "usr_d088557bda",
+      "usr_d4e21ddc1c",
+      "usr_d75ecb17ed",
+      "usr_d882b24609",
+      "usr_da79ca875d",
+      "usr_da9496def6",
+      "usr_e2d1ba31cc",
+      "usr_e36692b84a",
+      "usr_e588a7daa3",
+      "usr_ea231d599c",
+      "usr_ee782c1acd",
+      "usr_f0a371340f",
+      "usr_f2deed9f05",
+      "usr_f8ee1a5103",
+      "usr_f923c26381",
+      "usr_fd1c4de26c"
+    ],
+    "expected_unique_recipient_count": 88
+  },
+  "diff_report": {
+    "expected_unique_jobs": 88,
+    "actual_total_jobs": 3,
+    "jobs_diff": -85,
+    "expected_duplicates": 48,
+    "actual_duplicates_blocked": 3,
+    "duplicates_diff": -45,
+    "notes": []
+  },
+  "rate_audit": {
+    "status": "SKIPPED",
+    "reason": "no local DB available"
+  }
+}
