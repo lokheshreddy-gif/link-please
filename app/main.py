@@ -65,12 +65,12 @@ async def root():
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Link Please — Live Dashboard</title>
+    <title>LinkPlease Dashboard</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: linear-gradient(135deg, #0b091a, #161233, #0d0b1f);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #0b0c10;
             color: #f3f4f6;
             min-height: 100vh;
             padding: 40px 20px;
@@ -79,309 +79,284 @@ async def root():
             align-items: center;
         }
         .container {
-            max-width: 900px;
+            max-width: 1000px;
             width: 100%;
             display: flex;
             flex-direction: column;
-            gap: 24px;
+            gap: 30px;
         }
         header {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 16px;
-            padding: 24px;
-            backdrop-filter: blur(8px);
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 10px;
         }
         h1 {
-            font-size: 1.8rem;
-            background: linear-gradient(90deg, #a78bfa, #3b82f6);
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #60a5fa, #a78bfa);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            font-weight: 800;
         }
-        .subtitle { color: #9ca3af; font-size: 0.85rem; margin-top: 4px; }
-        .badge-live {
-            background: rgba(34, 197, 94, 0.15);
+        .badge-online {
+            background-color: rgba(34, 197, 94, 0.1);
             color: #4ade80;
-            border: 1px solid rgba(34, 197, 94, 0.3);
+            border: 1px solid rgba(34, 197, 94, 0.2);
             font-size: 0.75rem;
-            font-weight: 700;
-            padding: 4px 12px;
+            font-weight: 600;
+            padding: 3px 10px;
             border-radius: 99px;
             display: flex;
             align-items: center;
             gap: 6px;
         }
-        .badge-live::before {
+        .badge-online::before {
             content: "";
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            background: #22c55e;
+            width: 6px;
+            height: 6px;
+            background-color: #22c55e;
             border-radius: 50%;
-            box-shadow: 0 0 8px #22c55e;
-            animation: pulse 1.5s infinite;
-        }
-        @keyframes pulse {
-            0% { transform: scale(0.9); opacity: 0.6; }
-            50% { transform: scale(1.1); opacity: 1; }
-            100% { transform: scale(0.9); opacity: 0.6; }
+            display: inline-block;
         }
         
         /* Stats Grid */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 16px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
         }
         .stat-card {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            border-radius: 16px;
-            padding: 20px;
+            background-color: #121620;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 24px;
             text-align: center;
-            transition: transform 0.2s, background-color 0.2s;
-        }
-        .stat-card:hover {
-            transform: translateY(-2px);
-            background: rgba(255, 255, 255, 0.04);
-            border-color: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.25);
         }
         .stat-label {
             color: #9ca3af;
-            font-size: 0.8rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: 8px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            margin-bottom: 12px;
         }
         .stat-val {
-            font-size: 2.2rem;
+            font-size: 2.8rem;
             font-weight: 800;
-            color: #ffffff;
         }
-        .card-sent { border-bottom: 3px solid #10b981; }
-        .card-sent .stat-val { color: #34d399; }
-        .card-failed { border-bottom: 3px solid #ef4444; }
-        .card-failed .stat-val { color: #f87171; }
-        .card-queued { border-bottom: 3px solid #f59e0b; }
-        .card-queued .stat-val { color: #fbbf24; }
-        .card-blocked { border-bottom: 3px solid #8b5cf6; }
-        .card-blocked .stat-val { color: #a78bfa; }
+        .stat-sent { color: #10b981; }
+        .stat-failed { color: #f87171; }
+        .stat-queued { color: #3b82f6; }
+        .stat-blocked { color: #f59e0b; }
         
-        /* Main Body Grid */
+        /* Main Grid */
         .main-grid {
             display: grid;
-            grid-template-columns: 1fr;
+            grid-template-columns: 1fr 1fr;
             gap: 24px;
         }
-        @media (min-width: 768px) {
-            .main-grid { grid-template-columns: 1fr 1fr; }
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
         }
-        
         .section-card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 16px;
-            padding: 24px;
+            background-color: #121620;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+            display: flex;
+            flex-direction: column;
+            min-height: 400px;
         }
         h2 {
-            font-size: 1.2rem;
-            margin-bottom: 18px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 24px;
             color: #ffffff;
-            border-left: 3px solid #6366f1;
-            padding-left: 10px;
         }
         
-        /* Rule Form */
-        .form-group { margin-bottom: 16px; }
+        /* Form inputs */
+        .form-group {
+            margin-bottom: 20px;
+        }
         .form-group label {
             display: block;
             font-size: 0.8rem;
             color: #9ca3af;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
             font-weight: 600;
         }
         .form-group input, .form-group textarea {
             width: 100%;
-            background: rgba(255, 255, 255, 0.05);
+            background-color: #0b0d13;
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 8px;
-            padding: 10px 12px;
+            padding: 12px;
             color: #ffffff;
             font-family: inherit;
             font-size: 0.9rem;
             outline: none;
-            transition: border-color 0.2s, background-color 0.2s;
+            transition: border-color 0.2s;
         }
         .form-group input:focus, .form-group textarea:focus {
-            border-color: #6366f1;
-            background: rgba(255, 255, 255, 0.08);
+            border-color: #3b82f6;
         }
         button {
-            width: 100%;
-            background: #6366f1;
+            background-color: #3b82f6;
             color: #ffffff;
             border: none;
             border-radius: 8px;
-            padding: 12px;
+            padding: 14px;
             font-size: 0.95rem;
             font-weight: 600;
             cursor: pointer;
-            transition: background-color 0.2s, transform 0.1s;
+            width: 100%;
+            transition: background-color 0.2s;
+            margin-top: 10px;
         }
-        button:hover { background: #4f46e5; }
-        button:active { transform: scale(0.98); }
+        button:hover {
+            background-color: #2563eb;
+        }
+        
+        /* Rules List */
+        .rules-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            overflow-y: auto;
+            max-height: 380px;
+            padding-right: 4px;
+        }
+        .rules-list::-webkit-scrollbar {
+            width: 6px;
+        }
+        .rules-list::-webkit-scrollbar-thumb {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+        .rule-item {
+            background-color: #181d2a;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .rule-keyword {
+            color: #3b82f6;
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+        .rule-message {
+            color: #9ca3af;
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+        .rule-date {
+            color: #4b5563;
+            font-size: 0.75rem;
+            margin-top: 4px;
+        }
+        .empty-rules {
+            color: #6b7280;
+            font-size: 0.9rem;
+            text-align: center;
+            margin: auto;
+        }
+        
         .form-feedback {
-            margin-top: 12px;
+            margin-top: 16px;
             font-size: 0.85rem;
             display: none;
             padding: 10px;
             border-radius: 6px;
         }
-        .feedback-success { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.2); }
-        .feedback-error { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.2); }
-        
-        /* Endpoints list */
-        .endpoints-list { list-style: none; }
-        .endpoints-list li {
-            padding: 12px;
-            margin-bottom: 10px;
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            transition: background-color 0.2s;
-        }
-        .endpoints-list li:hover {
-            background: rgba(255, 255, 255, 0.04);
-        }
-        .endpoints-list a {
-            text-decoration: none;
-            color: inherit;
-            display: block;
-            width: 100%;
-        }
-        .method {
-            font-size: 0.65rem;
-            font-weight: 700;
-            padding: 3px 6px;
-            border-radius: 4px;
-            min-width: 48px;
-            text-align: center;
-        }
-        .get { background: rgba(16, 185, 129, 0.15); color: #34d399; }
-        .post { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
-        .path { font-family: monospace; font-size: 0.85rem; font-weight: 600; color: #ffffff; }
-        .desc { color: #9ca3af; font-size: 0.8rem; margin-left: auto; }
+        .feedback-success { background: rgba(16, 185, 129, 0.1); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.15); }
+        .feedback-error { background: rgba(239, 68, 68, 0.1); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.15); }
         
         footer {
             text-align: center;
-            margin-top: 40px;
-            color: #6b7280;
+            margin-top: 50px;
+            color: #4b5563;
             font-size: 0.8rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-            padding-top: 20px;
-            width: 100%;
-        }
-        .footer-credit {
-            font-weight: 600;
-            color: #9ca3af;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <div>
-                <h1>🔗 Link Please</h1>
-                <p class="subtitle">Instagram Comment-to-DM Automation Engine</p>
-            </div>
-            <span class="badge-live">Live Monitoring</span>
+            <h1>LinkPlease Dashboard</h1>
+            <span class="badge-online">Online</span>
         </header>
         
-        <!-- Live Stats Panel -->
+        <!-- Stats Panel -->
         <section class="stats-grid">
-            <div class="stat-card card-sent">
-                <div class="stat-label">Sent DMs</div>
-                <div class="stat-val" id="stat-sent">0</div>
+            <div class="stat-card">
+                <div class="stat-label">SENT</div>
+                <div class="stat-val stat-sent" id="stat-sent">0</div>
             </div>
-            <div class="stat-card card-failed">
-                <div class="stat-label">Failed DMs</div>
+            <div class="stat-card">
+                <div class="stat-label">FAILED</div>
                 <div class="stat-val" id="stat-failed">0</div>
             </div>
-            <div class="stat-card card-queued">
-                <div class="stat-label">Queued DMs</div>
-                <div class="stat-val" id="stat-queued">0</div>
+            <div class="stat-card">
+                <div class="stat-label">QUEUED</div>
+                <div class="stat-val stat-queued" id="stat-queued">0</div>
             </div>
-            <div class="stat-card card-blocked">
-                <div class="stat-label">Duplicates Blocked</div>
-                <div class="stat-val" id="stat-blocked">0</div>
+            <div class="stat-card">
+                <div class="stat-label">DUPLICATES BLOCKED</div>
+                <div class="stat-val stat-blocked" id="stat-blocked">0</div>
             </div>
         </section>
         
         <div class="main-grid">
-            <!-- Left Panel: Create Automation Rule -->
+            <!-- Create Rule Card -->
             <section class="section-card">
-                <h2>Create Rule</h2>
+                <h2>Create New Rule</h2>
                 <form id="rule-form">
                     <div class="form-group">
-                        <label for="keyword">Keyword (Case Insensitive)</label>
-                        <input type="text" id="keyword" required placeholder="e.g., PRICE, LINK, INFO">
+                        <label for="keyword">Keyword</label>
+                        <input type="text" id="keyword" required placeholder="e.g. PRICE">
                     </div>
                     <div class="form-group">
                         <label for="dm-message">DM Message</label>
-                        <textarea id="dm-message" rows="3" required placeholder="Type the message that will be sent via direct message..."></textarea>
+                        <textarea id="dm-message" rows="4" required placeholder="e.g. Here is our pricing..."></textarea>
                     </div>
-                    <button type="submit">Create Automation Rule</button>
+                    <button type="submit">Create Rule</button>
                 </form>
                 <div class="form-feedback" id="form-feedback"></div>
             </section>
             
-            <!-- Right Panel: API Endpoints -->
+            <!-- Active Rules Card -->
             <section class="section-card">
-                <h2>API Reference</h2>
-                <ul class="endpoints-list">
-                    <a href="/healthz" target="_blank">
-                        <li>
-                            <span class="method get">GET</span>
-                            <span class="path">/healthz</span>
-                            <span class="desc">Liveness check</span>
-                        </li>
-                    </a>
-                    <a href="/stats" target="_blank">
-                        <li>
-                            <span class="method get">GET</span>
-                            <span class="path">/stats</span>
-                            <span class="desc">Live stats counters</span>
-                        </li>
-                    </a>
-                    <li>
-                        <span class="method post">POST</span>
-                        <span class="path">/rules</span>
-                        <span class="desc">Create rule (programmatic)</span>
-                    </li>
-                    <li>
-                        <span class="method post">POST</span>
-                        <span class="path">/webhook</span>
-                        <span class="desc">Receive webhook events</span>
-                    </li>
-                </ul>
+                <h2>Active Rules</h2>
+                <div class="rules-list" id="rules-list">
+                    <div class="empty-rules">No rules active yet.</div>
+                </div>
             </section>
         </div>
         
         <footer>
-            <p>Developed by <span class="footer-credit">Mallela Lokesh Reddy</span> &bull; SRM University AP</p>
+            <p>Built by Mallela Lokesh Reddy</p>
         </footer>
     </div>
 
     <script>
-        // Fetch stats immediately and update every 2 seconds
+        // Fetch stats and update UI
         async function fetchStats() {
             try {
                 const response = await fetch('/stats');
@@ -391,10 +366,70 @@ async def root():
                     document.getElementById('stat-failed').textContent = stats.failed;
                     document.getElementById('stat-queued').textContent = stats.queued;
                     document.getElementById('stat-blocked').textContent = stats.duplicates_blocked;
+                    
+                    // Highlight failed count if non-zero
+                    const failedEl = document.getElementById('stat-failed');
+                    if (stats.failed > 0) {
+                        failedEl.className = 'stat-val stat-failed';
+                    } else {
+                        failedEl.className = 'stat-val';
+                    }
                 }
             } catch (err) {
                 console.error("Failed to fetch stats:", err);
             }
+        }
+
+        // Fetch active rules and update list UI
+        async function fetchRules() {
+            try {
+                const response = await fetch('/rules');
+                if (response.ok) {
+                    const rules = await response.json();
+                    const listContainer = document.getElementById('rules-list');
+                    
+                    if (rules.length === 0) {
+                        listContainer.innerHTML = '<div class="empty-rules">No rules active yet.</div>';
+                        return;
+                    }
+                    
+                    // Render list of rules ordered by created_at descending
+                    rules.sort((a, b) => (b.created_at || 0) - (a.created_at || 0));
+                    
+                    listContainer.innerHTML = rules.map(rule => {
+                        const dateStr = rule.created_at 
+                            ? new Date(rule.created_at * 1000).toLocaleString('en-US', {
+                                hour: 'numeric',
+                                minute: 'numeric',
+                                second: 'numeric',
+                                hour12: true,
+                                month: 'numeric',
+                                day: 'numeric',
+                                year: 'numeric'
+                              })
+                            : 'Unknown Date';
+                            
+                        return `
+                            <div class="rule-item">
+                                <div class="rule-keyword">Keyword: ${escapeHtml(rule.keyword.toUpperCase())}</div>
+                                <div class="rule-message">Message: ${escapeHtml(rule.dm_message)}</div>
+                                <div class="rule-date">Created: ${dateStr}</div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            } catch (err) {
+                console.error("Failed to fetch rules:", err);
+            }
+        }
+
+        function escapeHtml(str) {
+            return str
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
         }
 
         // Rule creation handling
@@ -418,10 +453,11 @@ async def root():
                 
                 const data = await response.json();
                 if (response.ok) {
-                    feedbackDiv.textContent = `Success! Rule created with ID: ${data.rule_id}`;
+                    feedbackDiv.textContent = `Success! Rule created.`;
                     feedbackDiv.classList.add('feedback-success');
                     feedbackDiv.style.display = 'block';
                     ruleForm.reset();
+                    fetchRules(); // Refresh list immediately
                 } else {
                     feedbackDiv.textContent = `Error: ${data.detail || 'Failed to create rule'}`;
                     feedbackDiv.classList.add('feedback-error');
@@ -434,9 +470,11 @@ async def root():
             }
         });
 
-        // Start polling
+        // Initialize and start polling
         fetchStats();
+        fetchRules();
         setInterval(fetchStats, 2000);
+        setInterval(fetchRules, 5000); // Poll rules every 5s for any updates
     </script>
 </body>
 </html>"""
@@ -494,7 +532,7 @@ async def create_rule(req: RuleCreateRequest):
 async def get_rules():
     """Return all active keyword-to-DM rules."""
     async with get_db() as db:
-        cursor = await db.execute("SELECT rule_id, keyword_lower AS keyword, dm_message FROM rules")
+        cursor = await db.execute("SELECT rule_id, keyword_lower AS keyword, dm_message, created_at FROM rules")
         rows = await cursor.fetchall()
         return [dict(row) for row in rows]
 
