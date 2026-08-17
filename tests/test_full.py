@@ -409,3 +409,18 @@ async def test_trailing_slash_routes():
         res = await ac.post("/webhook/", content=b"{}", headers={"Content-Type": "application/json"})
         assert res.status_code == 200
 
+
+@pytest.mark.asyncio
+async def test_get_rules_endpoint():
+    """GET /rules returns 200 with list of active rules."""
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        # Clear database/setup rule
+        await ac.post("/rules", json={"keyword": "GETTEST", "dm_message": "test get message"})
+        res = await ac.get("/rules")
+        assert res.status_code == 200
+        data = res.json()
+        assert isinstance(data, list)
+        assert len(data) >= 1
+        rule_keywords = [r["keyword"] for r in data]
+        assert "gettest" in rule_keywords or "GETTEST" in rule_keywords
+

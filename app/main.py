@@ -489,6 +489,16 @@ async def create_rule(req: RuleCreateRequest):
     }
 
 
+@app.get("/rules")
+@app.get("/rules/", include_in_schema=False)
+async def get_rules():
+    """Return all active keyword-to-DM rules."""
+    async with get_db() as db:
+        cursor = await db.execute("SELECT rule_id, keyword_lower AS keyword, dm_message FROM rules")
+        rows = await cursor.fetchall()
+        return [dict(row) for row in rows]
+
+
 @app.post("/webhook")
 @app.post("/webhook/", include_in_schema=False)
 async def webhook(request: Request):
