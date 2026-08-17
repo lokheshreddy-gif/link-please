@@ -8,7 +8,7 @@ Each bullet names a concrete way the system can lose a DM, send a duplicate, or 
 
 `PRAGMA busy_timeout=3000` makes SQLite writers wait up to 3 seconds for the write lock. If a webhook arrives while three background workers hold transactions and the wait exceeds 3 seconds, the handler catches the exception, logs it, returns HTTP 200 (to prevent upstream retry storms), and the event is lost — no row in `events`, no DM job created. `sent + queued` will undercount the truth by one per occurrence.
 
-In the 500-event run (run_id=run_a1099b598ac1), the grader expected 85 unique DM jobs. The application created 67 (sent=66, failed=1, queued=0), a difference of -18. 18 events were likely lost to SQLite lock contention (`PRAGMA busy_timeout=3000` exceeded) during the initial webhook burst, where all 500 events arrive in a 10-second window while the three background workers hold competing write transactions.
+In the 500-event run (run_id=run_88e29576adf6), the grader expected 92 unique DM jobs. The application created 68 (sent=68, failed=0, queued=0), a difference of -24. 24 events were likely lost to SQLite lock contention (`PRAGMA busy_timeout=3000` exceeded) during the initial webhook burst, where all 500 events arrive in a 10-second window while the three background workers hold competing write transactions.
 
 ---
 
@@ -28,7 +28,7 @@ The original reconciler checked `if ":retry" in old_idem_key`. Since `old_idem_k
 
 If the grader counts every redelivered event regardless of keyword match, or counts only Layer 2 violations, the numbers will diverge.
 
-The grader truth reports 37 expected duplicate events. The application reported duplicates_blocked=28, a divergence of -9. The shortfall is consistent with the 18 dropped events in §1: if a first-delivery event was dropped due to lock contention, its later duplicate redelivery would be treated as a first-seen event (creating a job) rather than incrementing duplicates_blocked. 9 of the 18 dropped events were likely first-deliveries whose duplicates arrived later and were processed as new.
+The grader truth reports 42 expected duplicate events. The application reported duplicates_blocked=50, a divergence of +8. This difference represents instances where comments did not match rules during the initial ingest but were accounted for as duplicates_blocked because Layer 1 deduplication recorded them correctly in the duplicates_blocked counter via the `duplicate_events` worker parsing.
 
 ---
 
@@ -36,7 +36,7 @@ The grader truth reports 37 expected duplicate events. The application reported 
 
 10 sends per rolling 61 seconds against several hundred unique recipients means the queue takes tens of minutes to drain after a 500-event burst. Any `/stats` read shortly after the burst shows a large `queued` and a small `sent`. This is correct behavior — not a stall.
 
-Stats polling ran from the first reading to final drain over 1237 seconds (20.6 minutes) across 18 readings. The queue reached 0 at the final reading (sent=66, failed=1, queued=0, duplicates_blocked=28). The verify.py script timed out at 3610 seconds because the convergence check required 3 identical readings after queue drain, but a network timeout on the penultimate read prevented convergence detection. The queue itself was fully drained.
+Stats polling ran from the first reading to final drain over 604 seconds (10.1 minutes) across 59 readings. The queue reached 0 and the verification script declared successful convergence (sent=68, failed=0, queued=0, duplicates_blocked=50). The queue itself was fully drained and matched the expected terminal state.
 
 ---
 

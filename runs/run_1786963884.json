@@ -1,0 +1,661 @@
+{
+  "run_id": "run_88e29576adf6",
+  "target_url": "https://link-please.onrender.com",
+  "count": 500,
+  "duration_seconds": 10,
+  "converged": true,
+  "stats_readings": [
+    {
+      "timestamp": 1786963279.664235,
+      "stats": {
+        "sent": 1,
+        "failed": 0,
+        "queued": 1,
+        "duplicates_blocked": 1
+      }
+    },
+    {
+      "timestamp": 1786963290.026093,
+      "stats": {
+        "sent": 1,
+        "failed": 0,
+        "queued": 11,
+        "duplicates_blocked": 2
+      }
+    },
+    {
+      "timestamp": 1786963300.335295,
+      "stats": {
+        "sent": 1,
+        "failed": 0,
+        "queued": 11,
+        "duplicates_blocked": 2
+      }
+    },
+    {
+      "timestamp": 1786963310.634034,
+      "stats": {
+        "sent": 1,
+        "failed": 0,
+        "queued": 11,
+        "duplicates_blocked": 2
+      }
+    },
+    {
+      "timestamp": 1786963321.016138,
+      "stats": {
+        "sent": 1,
+        "failed": 0,
+        "queued": 11,
+        "duplicates_blocked": 2
+      }
+    },
+    {
+      "timestamp": 1786963331.327469,
+      "stats": {
+        "sent": 1,
+        "failed": 0,
+        "queued": 11,
+        "duplicates_blocked": 2
+      }
+    },
+    {
+      "timestamp": 1786963342.0954611,
+      "stats": {
+        "sent": 3,
+        "failed": 0,
+        "queued": 12,
+        "duplicates_blocked": 2
+      }
+    },
+    {
+      "timestamp": 1786963352.82726,
+      "stats": {
+        "sent": 3,
+        "failed": 0,
+        "queued": 17,
+        "duplicates_blocked": 4
+      }
+    },
+    {
+      "timestamp": 1786963363.140498,
+      "stats": {
+        "sent": 3,
+        "failed": 0,
+        "queued": 17,
+        "duplicates_blocked": 4
+      }
+    },
+    {
+      "timestamp": 1786963373.44688,
+      "stats": {
+        "sent": 3,
+        "failed": 0,
+        "queued": 17,
+        "duplicates_blocked": 4
+      }
+    },
+    {
+      "timestamp": 1786963383.764412,
+      "stats": {
+        "sent": 3,
+        "failed": 0,
+        "queued": 17,
+        "duplicates_blocked": 4
+      }
+    },
+    {
+      "timestamp": 1786963394.101699,
+      "stats": {
+        "sent": 3,
+        "failed": 0,
+        "queued": 17,
+        "duplicates_blocked": 4
+      }
+    },
+    {
+      "timestamp": 1786963404.700133,
+      "stats": {
+        "sent": 5,
+        "failed": 0,
+        "queued": 25,
+        "duplicates_blocked": 7
+      }
+    },
+    {
+      "timestamp": 1786963415.1245282,
+      "stats": {
+        "sent": 5,
+        "failed": 0,
+        "queued": 25,
+        "duplicates_blocked": 7
+      }
+    },
+    {
+      "timestamp": 1786963425.522519,
+      "stats": {
+        "sent": 5,
+        "failed": 0,
+        "queued": 25,
+        "duplicates_blocked": 7
+      }
+    },
+    {
+      "timestamp": 1786963435.8632262,
+      "stats": {
+        "sent": 5,
+        "failed": 0,
+        "queued": 25,
+        "duplicates_blocked": 7
+      }
+    },
+    {
+      "timestamp": 1786963446.2477891,
+      "stats": {
+        "sent": 5,
+        "failed": 0,
+        "queued": 25,
+        "duplicates_blocked": 7
+      }
+    },
+    {
+      "timestamp": 1786963456.5370939,
+      "stats": {
+        "sent": 5,
+        "failed": 0,
+        "queued": 25,
+        "duplicates_blocked": 7
+      }
+    },
+    {
+      "timestamp": 1786963467.287104,
+      "stats": {
+        "sent": 6,
+        "failed": 0,
+        "queued": 30,
+        "duplicates_blocked": 10
+      }
+    },
+    {
+      "timestamp": 1786963477.6079922,
+      "stats": {
+        "sent": 6,
+        "failed": 0,
+        "queued": 30,
+        "duplicates_blocked": 10
+      }
+    },
+    {
+      "timestamp": 1786963487.9498382,
+      "stats": {
+        "sent": 6,
+        "failed": 0,
+        "queued": 30,
+        "duplicates_blocked": 10
+      }
+    },
+    {
+      "timestamp": 1786963498.247212,
+      "stats": {
+        "sent": 6,
+        "failed": 0,
+        "queued": 30,
+        "duplicates_blocked": 10
+      }
+    },
+    {
+      "timestamp": 1786963508.556052,
+      "stats": {
+        "sent": 6,
+        "failed": 0,
+        "queued": 30,
+        "duplicates_blocked": 10
+      }
+    },
+    {
+      "timestamp": 1786963518.873695,
+      "stats": {
+        "sent": 6,
+        "failed": 0,
+        "queued": 30,
+        "duplicates_blocked": 10
+      }
+    },
+    {
+      "timestamp": 1786963529.171967,
+      "stats": {
+        "sent": 8,
+        "failed": 0,
+        "queued": 36,
+        "duplicates_blocked": 12
+      }
+    },
+    {
+      "timestamp": 1786963539.643927,
+      "stats": {
+        "sent": 8,
+        "failed": 0,
+        "queued": 36,
+        "duplicates_blocked": 12
+      }
+    },
+    {
+      "timestamp": 1786963550.221799,
+      "stats": {
+        "sent": 8,
+        "failed": 0,
+        "queued": 36,
+        "duplicates_blocked": 12
+      }
+    },
+    {
+      "timestamp": 1786963560.5439308,
+      "stats": {
+        "sent": 8,
+        "failed": 0,
+        "queued": 36,
+        "duplicates_blocked": 12
+      }
+    },
+    {
+      "timestamp": 1786963571.430979,
+      "stats": {
+        "sent": 8,
+        "failed": 0,
+        "queued": 36,
+        "duplicates_blocked": 12
+      }
+    },
+    {
+      "timestamp": 1786963581.79025,
+      "stats": {
+        "sent": 8,
+        "failed": 0,
+        "queued": 36,
+        "duplicates_blocked": 12
+      }
+    },
+    {
+      "timestamp": 1786963592.0846431,
+      "stats": {
+        "sent": 9,
+        "failed": 0,
+        "queued": 42,
+        "duplicates_blocked": 20
+      }
+    },
+    {
+      "timestamp": 1786963602.354462,
+      "stats": {
+        "sent": 9,
+        "failed": 0,
+        "queued": 42,
+        "duplicates_blocked": 20
+      }
+    },
+    {
+      "timestamp": 1786963612.692916,
+      "stats": {
+        "sent": 9,
+        "failed": 0,
+        "queued": 42,
+        "duplicates_blocked": 20
+      }
+    },
+    {
+      "timestamp": 1786963622.996403,
+      "stats": {
+        "sent": 9,
+        "failed": 0,
+        "queued": 42,
+        "duplicates_blocked": 20
+      }
+    },
+    {
+      "timestamp": 1786963633.293238,
+      "stats": {
+        "sent": 9,
+        "failed": 0,
+        "queued": 42,
+        "duplicates_blocked": 20
+      }
+    },
+    {
+      "timestamp": 1786963643.6463108,
+      "stats": {
+        "sent": 9,
+        "failed": 0,
+        "queued": 42,
+        "duplicates_blocked": 20
+      }
+    },
+    {
+      "timestamp": 1786963653.93385,
+      "stats": {
+        "sent": 19,
+        "failed": 0,
+        "queued": 39,
+        "duplicates_blocked": 28
+      }
+    },
+    {
+      "timestamp": 1786963664.253806,
+      "stats": {
+        "sent": 19,
+        "failed": 0,
+        "queued": 39,
+        "duplicates_blocked": 28
+      }
+    },
+    {
+      "timestamp": 1786963674.838242,
+      "stats": {
+        "sent": 19,
+        "failed": 0,
+        "queued": 39,
+        "duplicates_blocked": 28
+      }
+    },
+    {
+      "timestamp": 1786963685.139214,
+      "stats": {
+        "sent": 19,
+        "failed": 0,
+        "queued": 39,
+        "duplicates_blocked": 28
+      }
+    },
+    {
+      "timestamp": 1786963695.467286,
+      "stats": {
+        "sent": 19,
+        "failed": 0,
+        "queued": 39,
+        "duplicates_blocked": 28
+      }
+    },
+    {
+      "timestamp": 1786963705.791908,
+      "stats": {
+        "sent": 19,
+        "failed": 0,
+        "queued": 39,
+        "duplicates_blocked": 28
+      }
+    },
+    {
+      "timestamp": 1786963716.053673,
+      "stats": {
+        "sent": 30,
+        "failed": 0,
+        "queued": 33,
+        "duplicates_blocked": 35
+      }
+    },
+    {
+      "timestamp": 1786963726.5231628,
+      "stats": {
+        "sent": 30,
+        "failed": 0,
+        "queued": 33,
+        "duplicates_blocked": 35
+      }
+    },
+    {
+      "timestamp": 1786963736.828129,
+      "stats": {
+        "sent": 30,
+        "failed": 0,
+        "queued": 33,
+        "duplicates_blocked": 35
+      }
+    },
+    {
+      "timestamp": 1786963747.191354,
+      "stats": {
+        "sent": 30,
+        "failed": 0,
+        "queued": 33,
+        "duplicates_blocked": 35
+      }
+    },
+    {
+      "timestamp": 1786963757.4918652,
+      "stats": {
+        "sent": 30,
+        "failed": 0,
+        "queued": 33,
+        "duplicates_blocked": 35
+      }
+    },
+    {
+      "timestamp": 1786963768.406368,
+      "stats": {
+        "sent": 30,
+        "failed": 0,
+        "queued": 33,
+        "duplicates_blocked": 35
+      }
+    },
+    {
+      "timestamp": 1786963778.7501152,
+      "stats": {
+        "sent": 41,
+        "failed": 0,
+        "queued": 27,
+        "duplicates_blocked": 50
+      }
+    },
+    {
+      "timestamp": 1786963789.6037362,
+      "stats": {
+        "sent": 41,
+        "failed": 0,
+        "queued": 27,
+        "duplicates_blocked": 50
+      }
+    },
+    {
+      "timestamp": 1786963799.879102,
+      "stats": {
+        "sent": 41,
+        "failed": 0,
+        "queued": 27,
+        "duplicates_blocked": 50
+      }
+    },
+    {
+      "timestamp": 1786963810.15143,
+      "stats": {
+        "sent": 41,
+        "failed": 0,
+        "queued": 27,
+        "duplicates_blocked": 50
+      }
+    },
+    {
+      "timestamp": 1786963820.4432158,
+      "stats": {
+        "sent": 41,
+        "failed": 0,
+        "queued": 27,
+        "duplicates_blocked": 50
+      }
+    },
+    {
+      "timestamp": 1786963831.077769,
+      "stats": {
+        "sent": 42,
+        "failed": 0,
+        "queued": 26,
+        "duplicates_blocked": 50
+      }
+    },
+    {
+      "timestamp": 1786963841.863358,
+      "stats": {
+        "sent": 65,
+        "failed": 0,
+        "queued": 3,
+        "duplicates_blocked": 50
+      }
+    },
+    {
+      "timestamp": 1786963852.940786,
+      "stats": {
+        "sent": 68,
+        "failed": 0,
+        "queued": 0,
+        "duplicates_blocked": 50
+      }
+    },
+    {
+      "timestamp": 1786963863.2190862,
+      "stats": {
+        "sent": 68,
+        "failed": 0,
+        "queued": 0,
+        "duplicates_blocked": 50
+      }
+    },
+    {
+      "timestamp": 1786963873.4931278,
+      "stats": {
+        "sent": 68,
+        "failed": 0,
+        "queued": 0,
+        "duplicates_blocked": 50
+      }
+    },
+    {
+      "timestamp": 1786963883.770452,
+      "stats": {
+        "sent": 68,
+        "failed": 0,
+        "queued": 0,
+        "duplicates_blocked": 50
+      }
+    }
+  ],
+  "final_stats": {
+    "sent": 68,
+    "failed": 0,
+    "queued": 0,
+    "duplicates_blocked": 50
+  },
+  "truth": {
+    "run_id": "run_88e29576adf6",
+    "status": "complete",
+    "total_events_generated": 500,
+    "total_deliveries_attempted": 542,
+    "webhook_200_count": 542,
+    "expected_unique_recipients": [
+      "usr_03e6b0bdb4",
+      "usr_063003c8ac",
+      "usr_0938ea971c",
+      "usr_0a532c22f9",
+      "usr_0d63813fba",
+      "usr_0f0eb76db0",
+      "usr_1260e7cf51",
+      "usr_1451abceee",
+      "usr_17234c1d00",
+      "usr_1d1fe1a98c",
+      "usr_2169280f72",
+      "usr_22dd14b63b",
+      "usr_26a9b41fec",
+      "usr_27eb5599be",
+      "usr_2a9c66706b",
+      "usr_2d108199f1",
+      "usr_35c44d8869",
+      "usr_36b1eef4dc",
+      "usr_375efb6670",
+      "usr_3a9a2285a8",
+      "usr_3b492ea65f",
+      "usr_3e0fe96393",
+      "usr_417c351237",
+      "usr_454816be81",
+      "usr_49774d0114",
+      "usr_4bee6c2d1c",
+      "usr_4c93947f15",
+      "usr_538d04041d",
+      "usr_55de527fba",
+      "usr_5c60f917cb",
+      "usr_6267b9047e",
+      "usr_6481c8e47d",
+      "usr_6a4819e9c7",
+      "usr_6e7509519f",
+      "usr_6eaa920c08",
+      "usr_6f728f68ae",
+      "usr_7006c1e2a9",
+      "usr_729f5b5f61",
+      "usr_72e463fa53",
+      "usr_72f2a6a79d",
+      "usr_72f9ad9f6f",
+      "usr_76260ef7a2",
+      "usr_7824d7fff3",
+      "usr_7a1e11a3a0",
+      "usr_7bb4850fe5",
+      "usr_7cc1d0f2d8",
+      "usr_7ecee24e7f",
+      "usr_7f9ccb6bf6",
+      "usr_81807e0799",
+      "usr_88cde0af31",
+      "usr_8efb9bd0a4",
+      "usr_8f7892501a",
+      "usr_91c3d04edb",
+      "usr_95e078594f",
+      "usr_9638778009",
+      "usr_9a7d33e5e5",
+      "usr_a8d020274a",
+      "usr_a95a6baf5b",
+      "usr_aa4e560f48",
+      "usr_af800f0d7b",
+      "usr_b300dcf23f",
+      "usr_b5cd315b83",
+      "usr_bbd3bb7a96",
+      "usr_be69277fd2",
+      "usr_beacccd6e5",
+      "usr_bfaa616099",
+      "usr_c38754dc3c",
+      "usr_c3fba9a8a7",
+      "usr_c9e5d64f06",
+      "usr_ca4bd4513c",
+      "usr_ccd1f0dc97",
+      "usr_cce55811cc",
+      "usr_d59d13665b",
+      "usr_d6d3e3ad4d",
+      "usr_dcc947fb29",
+      "usr_dd7917d4bd",
+      "usr_e19f739b84",
+      "usr_e229ea0fa4",
+      "usr_e25ecf6e01",
+      "usr_e3436efb4e",
+      "usr_e7761dcc81",
+      "usr_e9865b1ec5",
+      "usr_eec5b29024",
+      "usr_f00239ccb7",
+      "usr_f10d9e9f04",
+      "usr_f441ee2a6f",
+      "usr_f54da05087",
+      "usr_f599ae06e1",
+      "usr_f71066ee05",
+      "usr_f7929e04a6",
+      "usr_f97a475531",
+      "usr_fbc4b7a66a"
+    ],
+    "expected_unique_recipient_count": 92
+  },
+  "diff_report": {
+    "expected_unique_jobs": 92,
+    "actual_total_jobs": 68,
+    "jobs_diff": -24,
+    "expected_duplicates": 42,
+    "actual_duplicates_blocked": 50,
+    "duplicates_diff": 8,
+    "notes": []
+  },
+  "rate_audit": {
+    "status": "SKIPPED",
+    "reason": "no local DB available"
+  }
+}
