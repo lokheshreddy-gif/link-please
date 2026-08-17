@@ -68,6 +68,13 @@ async def root():
     <title>LinkPlease Dashboard</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary-accent: #3b82f6;
+            --primary-accent-hover: #2563eb;
+            --primary-accent-gradient: linear-gradient(to right, #60a5fa, #a78bfa);
+            --badge-glow: #22c55e;
+            --badge-glow-rgba: rgba(34, 197, 94, 0.2);
+        }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: #0b0c10;
@@ -77,6 +84,7 @@ async def root():
             display: flex;
             flex-direction: column;
             align-items: center;
+            transition: background-color 0.3s, color 0.3s;
         }
         .container {
             max-width: 1000px;
@@ -88,21 +96,30 @@ async def root():
         header {
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: space-between;
+            background-color: #121620;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+        }
+        .header-title-container {
+            display: flex;
+            align-items: center;
             gap: 12px;
-            margin-bottom: 10px;
         }
         h1 {
-            font-size: 2.2rem;
+            font-size: 1.8rem;
             font-weight: 700;
-            background: linear-gradient(to right, #60a5fa, #a78bfa);
+            background: var(--primary-accent-gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            transition: background 0.3s;
         }
         .badge-online {
             background-color: rgba(34, 197, 94, 0.1);
             color: #4ade80;
-            border: 1px solid rgba(34, 197, 94, 0.2);
+            border: 1px solid var(--badge-glow-rgba);
             font-size: 0.75rem;
             font-weight: 600;
             padding: 3px 10px;
@@ -115,10 +132,44 @@ async def root():
             content: "";
             width: 6px;
             height: 6px;
-            background-color: #22c55e;
+            background-color: var(--badge-glow);
             border-radius: 50%;
             display: inline-block;
         }
+        
+        /* Team Accents / Themes */
+        .themes-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .theme-label {
+            font-size: 0.75rem;
+            color: #9ca3af;
+            font-weight: 600;
+        }
+        .theme-btn {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: transform 0.2s, border-color 0.2s;
+            margin: 0;
+            padding: 0;
+            display: inline-block;
+        }
+        .theme-btn:hover {
+            transform: scale(1.15);
+        }
+        .theme-btn.active {
+            border-color: #ffffff;
+            transform: scale(1.1);
+        }
+        .btn-indigo { background-color: #3b82f6; }
+        .btn-emerald { background-color: #10b981; }
+        .btn-rose { background-color: #f43f5e; }
+        .btn-amber { background-color: #f59e0b; }
         
         /* Stats Grid */
         .stats-grid {
@@ -157,7 +208,7 @@ async def root():
         }
         .stat-sent { color: #10b981; }
         .stat-failed { color: #f87171; }
-        .stat-queued { color: #3b82f6; }
+        .stat-queued { color: var(--primary-accent); }
         .stat-blocked { color: #f59e0b; }
         
         /* Main Grid */
@@ -188,6 +239,34 @@ async def root():
             color: #ffffff;
         }
         
+        /* Filter Controls */
+        .controls-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+        .search-control {
+            flex: 1;
+        }
+        .sort-control {
+            width: 150px;
+        }
+        .search-control input, .sort-control select {
+            width: 100%;
+            background-color: #0b0d13;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 10px 12px;
+            color: #ffffff;
+            font-family: inherit;
+            font-size: 0.85rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .search-control input:focus, .sort-control select:focus {
+            border-color: var(--primary-accent);
+        }
+        
         /* Form inputs */
         .form-group {
             margin-bottom: 20px;
@@ -212,10 +291,10 @@ async def root():
             transition: border-color 0.2s;
         }
         .form-group input:focus, .form-group textarea:focus {
-            border-color: #3b82f6;
+            border-color: var(--primary-accent);
         }
-        button {
-            background-color: #3b82f6;
+        button.btn-submit {
+            background-color: var(--primary-accent);
             color: #ffffff;
             border: none;
             border-radius: 8px;
@@ -227,8 +306,8 @@ async def root():
             transition: background-color 0.2s;
             margin-top: 10px;
         }
-        button:hover {
-            background-color: #2563eb;
+        button.btn-submit:hover {
+            background-color: var(--primary-accent-hover);
         }
         
         /* Rules List */
@@ -255,11 +334,16 @@ async def root():
             display: flex;
             flex-direction: column;
             gap: 6px;
+            transition: border-color 0.2s;
+        }
+        .rule-item:hover {
+            border-color: rgba(255, 255, 255, 0.08);
         }
         .rule-keyword {
-            color: #3b82f6;
+            color: var(--primary-accent);
             font-weight: 700;
             font-size: 0.95rem;
+            transition: color 0.3s;
         }
         .rule-message {
             color: #9ca3af;
@@ -299,8 +383,18 @@ async def root():
 <body>
     <div class="container">
         <header>
-            <h1>LinkPlease Dashboard</h1>
-            <span class="badge-online">Online</span>
+            <div class="header-title-container">
+                <h1>LinkPlease Dashboard</h1>
+                <span class="badge-online">Online</span>
+            </div>
+            <!-- Theme / Team switcher controls -->
+            <div class="themes-container">
+                <span class="theme-label">Accents:</span>
+                <button class="theme-btn btn-indigo active" onclick="setTheme('indigo')" title="Indigo Accent"></button>
+                <button class="theme-btn btn-emerald" onclick="setTheme('emerald')" title="Emerald Accent"></button>
+                <button class="theme-btn btn-rose" onclick="setTheme('rose')" title="Rose Accent"></button>
+                <button class="theme-btn btn-amber" onclick="setTheme('amber')" title="Amber Accent"></button>
+            </div>
         </header>
         
         <!-- Stats Panel -->
@@ -336,7 +430,7 @@ async def root():
                         <label for="dm-message">DM Message</label>
                         <textarea id="dm-message" rows="4" required placeholder="e.g. Here is our pricing..."></textarea>
                     </div>
-                    <button type="submit">Create Rule</button>
+                    <button type="submit" class="btn-submit">Create Rule</button>
                 </form>
                 <div class="form-feedback" id="form-feedback"></div>
             </section>
@@ -344,6 +438,19 @@ async def root():
             <!-- Active Rules Card -->
             <section class="section-card">
                 <h2>Active Rules</h2>
+                <!-- Filter Controls Row -->
+                <div class="controls-row">
+                    <div class="search-control">
+                        <input type="text" id="search-input" onkeyup="filterRules()" placeholder="Filter by keyword...">
+                    </div>
+                    <div class="sort-control">
+                        <select id="sort-select" onchange="sortAndRenderRules()">
+                            <option value="created_desc">Created (Newest)</option>
+                            <option value="alpha_asc">Keyword (A-Z)</option>
+                            <option value="alpha_desc">Keyword (Z-A)</option>
+                        </select>
+                    </div>
+                </div>
                 <div class="rules-list" id="rules-list">
                     <div class="empty-rules">No rules active yet.</div>
                 </div>
@@ -356,6 +463,38 @@ async def root():
     </div>
 
     <script>
+        // Global memory storage for fetched rules to allow instant client-side filtering/sorting
+        let _allRules = [];
+
+        // Theme Switcher Logic
+        function setTheme(theme) {
+            // Remove active class from all buttons
+            document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('active'));
+            
+            // Add active to selected button
+            const activeBtn = document.querySelector(`.btn-${theme}`);
+            if (activeBtn) activeBtn.classList.add('active');
+            
+            const root = document.documentElement;
+            if (theme === 'indigo') {
+                root.style.setProperty('--primary-accent', '#3b82f6');
+                root.style.setProperty('--primary-accent-hover', '#2563eb');
+                root.style.setProperty('--primary-accent-gradient', 'linear-gradient(to right, #60a5fa, #a78bfa)');
+            } else if (theme === 'emerald') {
+                root.style.setProperty('--primary-accent', '#10b981');
+                root.style.setProperty('--primary-accent-hover', '#059669');
+                root.style.setProperty('--primary-accent-gradient', 'linear-gradient(to right, #34d399, #6ee7b7)');
+            } else if (theme === 'rose') {
+                root.style.setProperty('--primary-accent', '#f43f5e');
+                root.style.setProperty('--primary-accent-hover', '#e11d48');
+                root.style.setProperty('--primary-accent-gradient', 'linear-gradient(to right, #fb7185, #f472b6)');
+            } else if (theme === 'amber') {
+                root.style.setProperty('--primary-accent', '#f59e0b');
+                root.style.setProperty('--primary-accent-hover', '#d97706');
+                root.style.setProperty('--primary-accent-gradient', 'linear-gradient(to right, #fbbf24, #fcd34d)');
+            }
+        }
+
         // Fetch stats and update UI
         async function fetchStats() {
             try {
@@ -385,42 +524,65 @@ async def root():
             try {
                 const response = await fetch('/rules');
                 if (response.ok) {
-                    const rules = await response.json();
-                    const listContainer = document.getElementById('rules-list');
-                    
-                    if (rules.length === 0) {
-                        listContainer.innerHTML = '<div class="empty-rules">No rules active yet.</div>';
-                        return;
-                    }
-                    
-                    // Render list of rules ordered by created_at descending
-                    rules.sort((a, b) => (b.created_at || 0) - (a.created_at || 0));
-                    
-                    listContainer.innerHTML = rules.map(rule => {
-                        const dateStr = rule.created_at 
-                            ? new Date(rule.created_at * 1000).toLocaleString('en-US', {
-                                hour: 'numeric',
-                                minute: 'numeric',
-                                second: 'numeric',
-                                hour12: true,
-                                month: 'numeric',
-                                day: 'numeric',
-                                year: 'numeric'
-                              })
-                            : 'Unknown Date';
-                            
-                        return `
-                            <div class="rule-item">
-                                <div class="rule-keyword">Keyword: ${escapeHtml(rule.keyword.toUpperCase())}</div>
-                                <div class="rule-message">Message: ${escapeHtml(rule.dm_message)}</div>
-                                <div class="rule-date">Created: ${dateStr}</div>
-                            </div>
-                        `;
-                    }).join('');
+                    _allRules = await response.json();
+                    sortAndRenderRules();
                 }
             } catch (err) {
                 console.error("Failed to fetch rules:", err);
             }
+        }
+
+        // Filter and Render Rules
+        function filterRules() {
+            sortAndRenderRules();
+        }
+
+        function sortAndRenderRules() {
+            const query = document.getElementById('search-input').value.toLowerCase().trim();
+            const sortVal = document.getElementById('sort-select').value;
+            const listContainer = document.getElementById('rules-list');
+
+            // Apply filter
+            let filtered = _allRules.filter(rule => {
+                return rule.keyword.toLowerCase().includes(query);
+            });
+
+            if (filtered.length === 0) {
+                listContainer.innerHTML = '<div class="empty-rules">No matching rules found.</div>';
+                return;
+            }
+
+            // Apply sort
+            if (sortVal === 'created_desc') {
+                filtered.sort((a, b) => (b.created_at || 0) - (a.created_at || 0));
+            } else if (sortVal === 'alpha_asc') {
+                filtered.sort((a, b) => a.keyword.localeCompare(b.keyword));
+            } else if (sortVal === 'alpha_desc') {
+                filtered.sort((a, b) => b.keyword.localeCompare(a.keyword));
+            }
+
+            // Render
+            listContainer.innerHTML = filtered.map(rule => {
+                const dateStr = rule.created_at 
+                    ? new Date(rule.created_at * 1000).toLocaleString('en-US', {
+                        hour: 'numeric',
+                        minute: 'numeric',
+                        second: 'numeric',
+                        hour12: true,
+                        month: 'numeric',
+                        day: 'numeric',
+                        year: 'numeric'
+                      })
+                    : 'Unknown Date';
+                    
+                return `
+                    <div class="rule-item">
+                        <div class="rule-keyword">Keyword: ${escapeHtml(rule.keyword.toUpperCase())}</div>
+                        <div class="rule-message">Message: ${escapeHtml(rule.dm_message)}</div>
+                        <div class="rule-date">Created: ${dateStr}</div>
+                    </div>
+                `;
+            }).join('');
         }
 
         function escapeHtml(str) {
