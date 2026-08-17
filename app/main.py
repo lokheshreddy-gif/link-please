@@ -5,7 +5,7 @@ import logging
 import asyncio
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, status
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, HTMLResponse
 from pydantic import BaseModel
 
 from app.db import get_db, init_db
@@ -57,19 +57,120 @@ class RuleCreateRequest(BaseModel):
     dm_message: str
 
 
-@app.get("/")
+@app.get("/", response_class=HTMLResponse)
 async def root():
-    """Welcome page for the root URL."""
-    return {
-        "service": "link-please",
-        "status": "running",
-        "endpoints": {
-            "GET /healthz": "Health check",
-            "POST /rules": "Create a keyword-to-DM rule",
-            "GET /stats": "View sent/failed/queued/duplicates_blocked counters",
-            "POST /webhook": "Receive Pseudogram webhook events"
+    """Welcome landing page for the root URL."""
+    return """<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Link Please — Pseudogram DM Automation</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-    }
+        .container {
+            max-width: 600px;
+            width: 90%;
+            background: rgba(255,255,255,0.06);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 48px 40px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #a78bfa, #60a5fa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+        .subtitle { color: #9ca3af; margin-bottom: 32px; font-size: 0.95rem; }
+        .badge {
+            display: inline-block;
+            background: #22c55e;
+            color: #fff;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 999px;
+            margin-bottom: 28px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        .endpoints { list-style: none; }
+        .endpoints li {
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            transition: background 0.2s;
+        }
+        .endpoints li:hover { background: rgba(255,255,255,0.09); }
+        .method {
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 6px;
+            min-width: 48px;
+            text-align: center;
+        }
+        .get { background: #166534; color: #86efac; }
+        .post { background: #1e40af; color: #93c5fd; }
+        .path { font-weight: 600; color: #f3f4f6; }
+        .desc { color: #9ca3af; font-size: 0.85rem; margin-left: auto; }
+        a { color: inherit; text-decoration: none; }
+        .endpoints a li:hover { cursor: pointer; }
+        footer { text-align: center; margin-top: 28px; color: #6b7280; font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔗 Link Please</h1>
+        <p class="subtitle">Pseudogram DM Automation Service</p>
+        <span class="badge">● LIVE</span>
+        <ul class="endpoints">
+            <a href="/healthz"><li>
+                <span class="method get">GET</span>
+                <span class="path">/healthz</span>
+                <span class="desc">Health check</span>
+            </li></a>
+            <li>
+                <span class="method post">POST</span>
+                <span class="path">/rules</span>
+                <span class="desc">Create DM rule</span>
+            </li>
+            <a href="/stats"><li>
+                <span class="method get">GET</span>
+                <span class="path">/stats</span>
+                <span class="desc">View counters</span>
+            </li></a>
+            <li>
+                <span class="method post">POST</span>
+                <span class="path">/webhook</span>
+                <span class="desc">Receive events</span>
+            </li>
+        </ul>
+        <footer>Built by Mallela Lokesh Reddy</footer>
+    </div>
+</body>
+</html>"""
 
 
 @app.get("/healthz")
