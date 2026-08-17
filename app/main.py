@@ -65,110 +65,379 @@ async def root():
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Link Please — Pseudogram DM Automation</title>
+    <title>Link Please — Live Dashboard</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-            color: #e0e0e0;
+            background: linear-gradient(135deg, #0b091a, #161233, #0d0b1f);
+            color: #f3f4f6;
             min-height: 100vh;
+            padding: 40px 20px;
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: center;
         }
         .container {
-            max-width: 600px;
-            width: 90%;
-            background: rgba(255,255,255,0.06);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 20px;
-            padding: 48px 40px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            max-width: 900px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 24px;
+            backdrop-filter: blur(8px);
         }
         h1 {
-            font-size: 2rem;
-            background: linear-gradient(90deg, #a78bfa, #60a5fa);
+            font-size: 1.8rem;
+            background: linear-gradient(90deg, #a78bfa, #3b82f6);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 8px;
+            font-weight: 800;
         }
-        .subtitle { color: #9ca3af; margin-bottom: 32px; font-size: 0.95rem; }
-        .badge {
-            display: inline-block;
-            background: #22c55e;
-            color: #fff;
+        .subtitle { color: #9ca3af; font-size: 0.85rem; margin-top: 4px; }
+        .badge-live {
+            background: rgba(34, 197, 94, 0.15);
+            color: #4ade80;
+            border: 1px solid rgba(34, 197, 94, 0.3);
             font-size: 0.75rem;
-            font-weight: 600;
-            padding: 3px 10px;
-            border-radius: 999px;
-            margin-bottom: 28px;
-            animation: pulse 2s infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.6; }
-        }
-        .endpoints { list-style: none; }
-        .endpoints li {
-            padding: 14px 16px;
-            margin-bottom: 10px;
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.07);
-            border-radius: 12px;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 99px;
             display: flex;
             align-items: center;
-            gap: 14px;
-            transition: background 0.2s;
+            gap: 6px;
         }
-        .endpoints li:hover { background: rgba(255,255,255,0.09); }
-        .method {
-            font-size: 0.7rem;
-            font-weight: 700;
-            padding: 3px 8px;
+        .badge-live::before {
+            content: "";
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #22c55e;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #22c55e;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(0.9); opacity: 0.6; }
+            50% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(0.9); opacity: 0.6; }
+        }
+        
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+        }
+        .stat-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        .stat-label {
+            color: #9ca3af;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 8px;
+        }
+        .stat-val {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #ffffff;
+        }
+        .card-sent { border-bottom: 3px solid #10b981; }
+        .card-sent .stat-val { color: #34d399; }
+        .card-failed { border-bottom: 3px solid #ef4444; }
+        .card-failed .stat-val { color: #f87171; }
+        .card-queued { border-bottom: 3px solid #f59e0b; }
+        .card-queued .stat-val { color: #fbbf24; }
+        .card-blocked { border-bottom: 3px solid #8b5cf6; }
+        .card-blocked .stat-val { color: #a78bfa; }
+        
+        /* Main Body Grid */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+        @media (min-width: 768px) {
+            .main-grid { grid-template-columns: 1fr 1fr; }
+        }
+        
+        .section-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 24px;
+        }
+        h2 {
+            font-size: 1.2rem;
+            margin-bottom: 18px;
+            color: #ffffff;
+            border-left: 3px solid #6366f1;
+            padding-left: 10px;
+        }
+        
+        /* Rule Form */
+        .form-group { margin-bottom: 16px; }
+        .form-group label {
+            display: block;
+            font-size: 0.8rem;
+            color: #9ca3af;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+        .form-group input, .form-group textarea {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 10px 12px;
+            color: #ffffff;
+            font-family: inherit;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s, background-color 0.2s;
+        }
+        .form-group input:focus, .form-group textarea:focus {
+            border-color: #6366f1;
+            background: rgba(255, 255, 255, 0.08);
+        }
+        button {
+            width: 100%;
+            background: #6366f1;
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+        button:hover { background: #4f46e5; }
+        button:active { transform: scale(0.98); }
+        .form-feedback {
+            margin-top: 12px;
+            font-size: 0.85rem;
+            display: none;
+            padding: 10px;
             border-radius: 6px;
+        }
+        .feedback-success { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.2); }
+        .feedback-error { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.2); }
+        
+        /* Endpoints list */
+        .endpoints-list { list-style: none; }
+        .endpoints-list li {
+            padding: 12px;
+            margin-bottom: 10px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: background-color 0.2s;
+        }
+        .endpoints-list li:hover {
+            background: rgba(255, 255, 255, 0.04);
+        }
+        .endpoints-list a {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            width: 100%;
+        }
+        .method {
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 3px 6px;
+            border-radius: 4px;
             min-width: 48px;
             text-align: center;
         }
-        .get { background: #166534; color: #86efac; }
-        .post { background: #1e40af; color: #93c5fd; }
-        .path { font-weight: 600; color: #f3f4f6; }
-        .desc { color: #9ca3af; font-size: 0.85rem; margin-left: auto; }
-        a { color: inherit; text-decoration: none; }
-        .endpoints a li:hover { cursor: pointer; }
-        footer { text-align: center; margin-top: 28px; color: #6b7280; font-size: 0.8rem; }
+        .get { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+        .post { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+        .path { font-family: monospace; font-size: 0.85rem; font-weight: 600; color: #ffffff; }
+        .desc { color: #9ca3af; font-size: 0.8rem; margin-left: auto; }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #6b7280;
+            font-size: 0.8rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding-top: 20px;
+            width: 100%;
+        }
+        .footer-credit {
+            font-weight: 600;
+            color: #9ca3af;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🔗 Link Please</h1>
-        <p class="subtitle">Pseudogram DM Automation Service</p>
-        <span class="badge">● LIVE</span>
-        <ul class="endpoints">
-            <a href="/healthz"><li>
-                <span class="method get">GET</span>
-                <span class="path">/healthz</span>
-                <span class="desc">Health check</span>
-            </li></a>
-            <li>
-                <span class="method post">POST</span>
-                <span class="path">/rules</span>
-                <span class="desc">Create DM rule</span>
-            </li>
-            <a href="/stats"><li>
-                <span class="method get">GET</span>
-                <span class="path">/stats</span>
-                <span class="desc">View counters</span>
-            </li></a>
-            <li>
-                <span class="method post">POST</span>
-                <span class="path">/webhook</span>
-                <span class="desc">Receive events</span>
-            </li>
-        </ul>
-        <footer>Built by Mallela Lokesh Reddy</footer>
+        <header>
+            <div>
+                <h1>🔗 Link Please</h1>
+                <p class="subtitle">Instagram Comment-to-DM Automation Engine</p>
+            </div>
+            <span class="badge-live">Live Monitoring</span>
+        </header>
+        
+        <!-- Live Stats Panel -->
+        <section class="stats-grid">
+            <div class="stat-card card-sent">
+                <div class="stat-label">Sent DMs</div>
+                <div class="stat-val" id="stat-sent">0</div>
+            </div>
+            <div class="stat-card card-failed">
+                <div class="stat-label">Failed DMs</div>
+                <div class="stat-val" id="stat-failed">0</div>
+            </div>
+            <div class="stat-card card-queued">
+                <div class="stat-label">Queued DMs</div>
+                <div class="stat-val" id="stat-queued">0</div>
+            </div>
+            <div class="stat-card card-blocked">
+                <div class="stat-label">Duplicates Blocked</div>
+                <div class="stat-val" id="stat-blocked">0</div>
+            </div>
+        </section>
+        
+        <div class="main-grid">
+            <!-- Left Panel: Create Automation Rule -->
+            <section class="section-card">
+                <h2>Create Rule</h2>
+                <form id="rule-form">
+                    <div class="form-group">
+                        <label for="keyword">Keyword (Case Insensitive)</label>
+                        <input type="text" id="keyword" required placeholder="e.g., PRICE, LINK, INFO">
+                    </div>
+                    <div class="form-group">
+                        <label for="dm-message">DM Message</label>
+                        <textarea id="dm-message" rows="3" required placeholder="Type the message that will be sent via direct message..."></textarea>
+                    </div>
+                    <button type="submit">Create Automation Rule</button>
+                </form>
+                <div class="form-feedback" id="form-feedback"></div>
+            </section>
+            
+            <!-- Right Panel: API Endpoints -->
+            <section class="section-card">
+                <h2>API Reference</h2>
+                <ul class="endpoints-list">
+                    <a href="/healthz" target="_blank">
+                        <li>
+                            <span class="method get">GET</span>
+                            <span class="path">/healthz</span>
+                            <span class="desc">Liveness check</span>
+                        </li>
+                    </a>
+                    <a href="/stats" target="_blank">
+                        <li>
+                            <span class="method get">GET</span>
+                            <span class="path">/stats</span>
+                            <span class="desc">Live stats counters</span>
+                        </li>
+                    </a>
+                    <li>
+                        <span class="method post">POST</span>
+                        <span class="path">/rules</span>
+                        <span class="desc">Create rule (programmatic)</span>
+                    </li>
+                    <li>
+                        <span class="method post">POST</span>
+                        <span class="path">/webhook</span>
+                        <span class="desc">Receive webhook events</span>
+                    </li>
+                </ul>
+            </section>
+        </div>
+        
+        <footer>
+            <p>Developed by <span class="footer-credit">Mallela Lokesh Reddy</span> &bull; SRM University AP</p>
+        </footer>
     </div>
+
+    <script>
+        // Fetch stats immediately and update every 2 seconds
+        async function fetchStats() {
+            try {
+                const response = await fetch('/stats');
+                if (response.ok) {
+                    const stats = await response.json();
+                    document.getElementById('stat-sent').textContent = stats.sent;
+                    document.getElementById('stat-failed').textContent = stats.failed;
+                    document.getElementById('stat-queued').textContent = stats.queued;
+                    document.getElementById('stat-blocked').textContent = stats.duplicates_blocked;
+                }
+            } catch (err) {
+                console.error("Failed to fetch stats:", err);
+            }
+        }
+
+        // Rule creation handling
+        const ruleForm = document.getElementById('rule-form');
+        const feedbackDiv = document.getElementById('form-feedback');
+
+        ruleForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            feedbackDiv.style.display = 'none';
+            feedbackDiv.className = 'form-feedback';
+            
+            const keyword = document.getElementById('keyword').value;
+            const dm_message = document.getElementById('dm-message').value;
+            
+            try {
+                const response = await fetch('/rules', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ keyword, dm_message })
+                });
+                
+                const data = await response.json();
+                if (response.ok) {
+                    feedbackDiv.textContent = `Success! Rule created with ID: ${data.rule_id}`;
+                    feedbackDiv.classList.add('feedback-success');
+                    feedbackDiv.style.display = 'block';
+                    ruleForm.reset();
+                } else {
+                    feedbackDiv.textContent = `Error: ${data.detail || 'Failed to create rule'}`;
+                    feedbackDiv.classList.add('feedback-error');
+                    feedbackDiv.style.display = 'block';
+                }
+            } catch (err) {
+                feedbackDiv.textContent = `Error: Network failure. Could not connect to API.`;
+                feedbackDiv.classList.add('feedback-error');
+                feedbackDiv.style.display = 'block';
+            }
+        });
+
+        // Start polling
+        fetchStats();
+        setInterval(fetchStats, 2000);
+    </script>
 </body>
 </html>"""
 
